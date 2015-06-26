@@ -594,7 +594,7 @@ int main(void)
 			/* Do something on RTC alarm match here */
 			rtc_calendar_clear_alarm_match(&rtc_instance, RTC_CALENDAR_ALARM_0);
 			rtc_calendar_get_time(&rtc_instance, &time);
-			sprintf(ping_msg, "Ping @ %d/%d/%d %d:%d:%d", time.day, time.month, time.year, time.hour, time.minute, time.second);
+			sprintf(ping_msg, "Ping @ %d/%d/%d %d:%d:%d", time.month, time.day, time.year, time.hour, time.minute, time.second);
 			mqtt_publish(&mqtt_inst, "bs/monitor/ping", ping_msg, strlen(ping_msg), 0, 1);
 		}
 	}

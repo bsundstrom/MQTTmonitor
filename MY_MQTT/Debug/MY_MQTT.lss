@@ -29,9 +29,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
  12 .debug_line   0001a675  00000000  00000000  00099024  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_str    00090db8  00000000  00000000  000b3699  2**0
+ 13 .debug_str    00090df3  00000000  00000000  000b3699  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_frame  00002db0  00000000  00000000  00144454  2**2
+ 14 .debug_frame  00002db0  00000000  00000000  0014448c  2**2
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -20814,7 +20814,19 @@ static inline void system_interrupt_enable_global(void)
 	cpu_irq_enable();
     58a2:	4b96      	ldr	r3, [pc, #600]	; (5afc <main+0x298>)
     58a4:	701e      	strb	r6, [r3, #0]
+    This function ensures the apparent order of the explicit memory operations before
+    and after the instruction, without ensuring their completion.
+ */
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __DMB(void)
+{
+  __ASM volatile ("dmb");
     58a6:	f3bf 8f5f 	dmb	sy
+  This function enables IRQ interrupts by clearing the I-bit in the CPSR.
+  Can only be executed in Privileged modes.
+ */
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __enable_irq(void)
+{
+  __ASM volatile ("cpsie i" : : : "memory");
     58aa:	b662      	cpsie	i
 {
 	/* Sanity check arguments */
@@ -21299,9 +21311,9 @@ static void configure_mqtt(void)
     5a9e:	1c21      	adds	r1, r4, #0
     5aa0:	4b4d      	ldr	r3, [pc, #308]	; (5bd8 <main+0x374>)
     5aa2:	4798      	blx	r3
-			sprintf(ping_msg, "Ping @ %d/%d/%d %d:%d:%d", time.day, time.month, time.year, time.hour, time.minute, time.second);
-    5aa4:	7922      	ldrb	r2, [r4, #4]
-    5aa6:	7963      	ldrb	r3, [r4, #5]
+			sprintf(ping_msg, "Ping @ %d/%d/%d %d:%d:%d", time.month, time.day, time.year, time.hour, time.minute, time.second);
+    5aa4:	7962      	ldrb	r2, [r4, #5]
+    5aa6:	7923      	ldrb	r3, [r4, #4]
     5aa8:	88e1      	ldrh	r1, [r4, #6]
     5aaa:	9100      	str	r1, [sp, #0]
     5aac:	78a1      	ldrb	r1, [r4, #2]
@@ -26290,8 +26302,8 @@ static void configure_mqtt(void)
     9094:	20656c70 0a0d2d2d 53202d2d 32574d41     ple --..-- SAMW2
     90a4:	50585f35 4e49414c 505f4445 2d204f52     5_XPLAINED_PRO -
     90b4:	2d0a0d2d 6f43202d 6c69706d 203a6465     -..-- Compiled: 
-    90c4:	206e754a 32203132 20353130 343a3931     Jun 21 2015 19:4
-    90d4:	30343a30 0d2d2d20 00000000 5454514d     0:40 --.....MQTT
+    90c4:	206e754a 32203632 20353130 303a3731     Jun 26 2015 17:0
+    90d4:	37303a33 0d2d2d20 00000000 5454514d     3:07 --.....MQTT
     90e4:	696e6920 6c616974 74617a69 206e6f69      initialization 
     90f4:	6c696166 202e6465 6f727245 6f632072     failed. Error co
     9104:	69206564 25282073 0a0d2964 00000000     de is (%d)......

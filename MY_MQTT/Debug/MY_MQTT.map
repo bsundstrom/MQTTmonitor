@@ -11591,7 +11591,7 @@ OUTPUT(MY_MQTT.elf elf32-littlearm)
  .debug_line    0x0001845b      0xfbb src/iot/sw_timer.o
  .debug_line    0x00019416     0x125f src/main21.o
 
-.debug_str      0x00000000    0x90db8
+.debug_str      0x00000000    0x90df3
  .debug_str     0x00000000    0x7b81f src/ASF/common2/services/delay/sam0/systick_counter.o
                               0x7c061 (size before relaxing)
  .debug_str     0x0007b81f     0x71e2 src/ASF/common/components/wifi/winc1500/bsp/source/nm_bsp_samd21.o
@@ -11664,8 +11664,8 @@ OUTPUT(MY_MQTT.elf elf32-littlearm)
                               0x81af4 (size before relaxing)
  .debug_str     0x000902a9      0x24c src/iot/sw_timer.o
                               0x83648 (size before relaxing)
- .debug_str     0x000904f5      0x8c3 src/main21.o
-                              0x87388 (size before relaxing)
+ .debug_str     0x000904f5      0x8fe src/main21.o
+                              0x873a4 (size before relaxing)
 
 .debug_frame    0x00000000     0x2db0
  .debug_frame   0x00000000       0x60 src/ASF/common2/services/delay/sam0/systick_counter.o
