@@ -1,5 +1,5 @@
 src/main21.d src/main21.o: ../src/main21.c ../src/asf.h \
- ../src/ASF/sam0/utils/compiler.h \
+ ../src/ASF/sam0/drivers/ac/ac.h ../src/ASF/sam0/utils/compiler.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include\stddef.h \
  ../src/ASF/common/utils/parts.h ../src/ASF/sam0/utils/status_codes.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include\stdint.h \
@@ -95,11 +95,15 @@ src/main21.d src/main21.o: ../src/main21.c ../src/asf.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\alloca.h \
  ../src/ASF/common/utils/interrupt.h \
  ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.h \
- ../src/ASF/common2/services/delay/delay.h \
- ../src/ASF/common2/services/delay/sam0/systick_counter.h \
  ../src/ASF/sam0/drivers/system/clock/clock.h \
  ../src/ASF/sam0/drivers/system/clock/gclk.h \
  ../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da/clock_feature.h \
+ ../src/ASF/sam0/drivers/ac/ac_callback.h \
+ ../src/ASF/sam0/drivers/system/interrupt/system_interrupt.h \
+ ../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21/system_interrupt_features.h \
+ ../src/ASF/sam0/drivers/ac/ac.h \
+ ../src/ASF/common2/services/delay/delay.h \
+ ../src/ASF/common2/services/delay/sam0/systick_counter.h \
  ../src/ASF/sam0/drivers/extint/extint.h \
  ../src/ASF/sam0/drivers/system/pinmux/pinmux.h \
  ../src/ASF/sam0/drivers/extint/extint_callback.h \
@@ -108,10 +112,6 @@ src/main21.d src/main21.o: ../src/main21.c ../src/asf.h \
  ../src/ASF/sam0/boards/samw25_xplained_pro/samw25_xplained_pro.h \
  ../src/config/conf_board.h ../src/ASF/sam0/drivers/port/port.h \
  ../src/ASF/sam0/drivers/rtc/rtc_calendar.h ../src/config/conf_clocks.h \
- ../src/ASF/sam0/drivers/system/interrupt/system_interrupt.h \
- ../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21/system_interrupt_features.h \
- ../src/ASF/sam0/drivers/rtc/rtc_calendar_interrupt.h \
- ../src/ASF/sam0/drivers/rtc/rtc_calendar.h \
  ../src/ASF/sam0/drivers/sercom/sercom.h \
  ../src/ASF/sam0/drivers/system/system.h \
  ../src/ASF/sam0/drivers/system/power/power_sam_d_r/power.h \
@@ -148,6 +148,8 @@ src/main21.d src/main21.o: ../src/main21.c ../src/asf.h \
  ../src/asf.h ../src/iot/sw_timer.h
 
 ../src/asf.h:
+
+../src/ASF/sam0/drivers/ac/ac.h:
 
 ../src/ASF/sam0/utils/compiler.h:
 
@@ -343,15 +345,23 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 
 ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.h:
 
-../src/ASF/common2/services/delay/delay.h:
-
-../src/ASF/common2/services/delay/sam0/systick_counter.h:
-
 ../src/ASF/sam0/drivers/system/clock/clock.h:
 
 ../src/ASF/sam0/drivers/system/clock/gclk.h:
 
 ../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da/clock_feature.h:
+
+../src/ASF/sam0/drivers/ac/ac_callback.h:
+
+../src/ASF/sam0/drivers/system/interrupt/system_interrupt.h:
+
+../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21/system_interrupt_features.h:
+
+../src/ASF/sam0/drivers/ac/ac.h:
+
+../src/ASF/common2/services/delay/delay.h:
+
+../src/ASF/common2/services/delay/sam0/systick_counter.h:
 
 ../src/ASF/sam0/drivers/extint/extint.h:
 
@@ -372,14 +382,6 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/ASF/sam0/drivers/rtc/rtc_calendar.h:
 
 ../src/config/conf_clocks.h:
-
-../src/ASF/sam0/drivers/system/interrupt/system_interrupt.h:
-
-../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21/system_interrupt_features.h:
-
-../src/ASF/sam0/drivers/rtc/rtc_calendar_interrupt.h:
-
-../src/ASF/sam0/drivers/rtc/rtc_calendar.h:
 
 ../src/ASF/sam0/drivers/sercom/sercom.h:
 

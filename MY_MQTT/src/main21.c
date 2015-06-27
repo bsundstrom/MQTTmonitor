@@ -109,12 +109,10 @@
 
 char topic[256];
 char msg[MAIN_CHAT_BUFFER_SIZE];
-
-char ping_msg[40];
+uint8_t new_activity;
 
 //! [rtc_module_instance]
 struct rtc_module rtc_instance;
-struct rtc_calendar_alarm_time alarm;
 
 /** UART module for debug. */
 static struct usart_module cdc_uart_module;
@@ -140,13 +138,6 @@ static int uart_buffer_written = 0;
 /** A buffer of character from the serial. */
 static uint16_t uart_ch_buffer;
 
-enum mqtt_states_t
-{
-	MQTT_INITIALIZING,
-	MQTT_CONNECTED,
-	MQTT_DISCONNECTED
-} mqtt_state;
-
 /**
  * \brief Callback of USART input.
  *
@@ -158,41 +149,6 @@ static void uart_callback(const struct usart_module *const module)
 	if (uart_buffer_written < MAIN_CHAT_BUFFER_SIZE) {
 		uart_buffer[uart_buffer_written++] = uart_ch_buffer & 0xFF;
 	}
-}
-
-void configure_rtc_callbacks(void)
-{
-	//! [reg_callback]
-	rtc_calendar_register_callback(
-	&rtc_instance, rtc_match_callback, RTC_CALENDAR_CALLBACK_ALARM_0);
-	//! [reg_callback]
-	//! [en_callback]
-	rtc_calendar_enable_callback(&rtc_instance, RTC_CALENDAR_CALLBACK_ALARM_0);
-	//! [en_callback]
-}
-
-void rtc_match_callback(void)
-{
-	struct rtc_calendar_time time;
-	uint16_t count = 0;
-	/* Set new alarm in 5 seconds */
-	//! [alarm_mask]
-	alarm.mask = RTC_CALENDAR_ALARM_MASK_SEC;
-	//! [alarm_mask]
-
-	//! [set_alarm]
-	alarm.time.second += 5;
-	alarm.time.second = alarm.time.second % 60;
-	
-	if(++count > 11 && mqtt_state == MQTT_CONNECTED)
-	{
-		count = 0;
-		rtc_calendar_get_time(&rtc_instance, &time);
-		sprintf(ping_msg, "Ping @ %d/%d/%d %d:%d:%d", time.month, time.day, time.year, time.hour, time.minute, time.second);
-		mqtt_publish(&mqtt_inst, "bs/monitor/ping", ping_msg, strlen(ping_msg), 0, 1);
-	}
-
-	rtc_calendar_set_alarm(&rtc_instance, &alarm, RTC_CALENDAR_ALARM_0);
 }
 
 /**
@@ -230,7 +186,7 @@ static void wifi_callback(uint8 msg_type, void *msg_data)
 		msg_wifi_state = (tstrM2mWifiStateChanged *)msg_data;
 		if (msg_wifi_state->u8CurrState == M2M_WIFI_CONNECTED) {
 			/* If Wi-Fi is connected. */
-			printf("\r\nWi-Fi connected\r\n");
+			printf("Wi-Fi connected\r\n");
 			m2m_wifi_request_dhcp_client();
 		} else if (msg_wifi_state->u8CurrState == M2M_WIFI_DISCONNECTED) {
 			/* If Wi-Fi is disconnected. */
@@ -374,12 +330,11 @@ static void mqtt_callback(struct mqtt_module *module_inst, int type, union mqtt_
 			/* Subscribe chat topic. */
 			mqtt_subscribe(module_inst, MAIN_CHAT_TOPIC "#", 0);
 			/* Enable USART receiving callback. */
-			mqtt_state = MQTT_CONNECTED; //added by Brad
-			printf("Connected to MQTT Broker.\r\n");
+			usart_enable_callback(&cdc_uart_module, USART_CALLBACK_BUFFER_RECEIVED);
+			printf("Preparation of the chat has been completed.\r\n");
 		} else {
 			/* Cannot connect for some reason. */
-			printf("MQTT broker declined access! error code %d\r\n", data->connected.result);
-			mqtt_state = MQTT_DISCONNECTED; //added by Brad
+			printf("MQTT broker decline your access! error code %d\r\n", data->connected.result);
 		}
 
 		break;
@@ -392,12 +347,13 @@ static void mqtt_callback(struct mqtt_module *module_inst, int type, union mqtt_
 		/* Stop timer and USART callback. */
 		printf("MQTT disconnected\r\n");
 		usart_disable_callback(&cdc_uart_module, USART_CALLBACK_BUFFER_RECEIVED);
-		mqtt_state = MQTT_DISCONNECTED; //added by Brad
 		break;
 	}
 }
 
-
+/**
+ * \brief Configure UART console.
+ */
 static void configure_console(void)
 {
 	struct usart_config usart_conf;
@@ -470,9 +426,9 @@ void configure_extint_channel(void)
 	extint_chan_set_config(BUTTON_0_EIC_LINE, &config_extint_chan);
 }
 
+//! [setup_7]
 void extint_detection_callback(void)
 {
-	struct rtc_calendar_time time;
 	bool pin_state = port_pin_get_input_level(BUTTON_0_PIN);
 	if(pin_state)
 	{
@@ -484,21 +440,7 @@ void extint_detection_callback(void)
 		strcpy(msg, "Closed");
 		printf("%s\n", msg);
 	}
-	/* Handle pending events from network controller. */
-	m2m_wifi_handle_events(NULL);
-	/* Checks the timer timeout. */
-	sw_timer_task(&swt_module_inst);
-	rtc_calendar_get_time(&rtc_instance, &time);
-	//msg string is populated in the extpin event
-	if(mqtt_state == MQTT_CONNECTED)
-	{
-		sprintf(ping_msg, "%s @ %d/%d/%d %d:%d:%d", msg, time.day, time.month, time.year, time.hour, time.minute, time.second);
-		mqtt_publish(&mqtt_inst, topic, ping_msg, strlen(ping_msg), 0, 1);
-		printf("Published to reed_switch topic: %s", ping_msg);
-	}
-	else
-		printf("Unable to publish reed_switch status change - MQTT is not connected!");
-	m2m_wifi_handle_events(NULL);
+	new_activity = 1;
 }
 
 void configure_extint_callbacks(void)
@@ -510,26 +452,47 @@ void configure_extint_callbacks(void)
 	EXTINT_CALLBACK_TYPE_DETECT);
 }
 
+
+
+void configure_rtc_calendar(void);
+
+//! [rtc_module_instance]
+
+//! [initiate]
 void configure_rtc_calendar(void)
 {
 	/* Initialize RTC in calendar mode. */
+	//! [set_conf]
 	struct rtc_calendar_config config_rtc_calendar;
+	//! [set_conf]
+	//! [get_default]
 	rtc_calendar_get_config_defaults(&config_rtc_calendar);
+	//! [get_default]
 
-	alarm.time.year      = 2015;
-	alarm.time.month     = 1;
-	alarm.time.day       = 1;
-	alarm.time.hour      = 0;
-	alarm.time.minute    = 0;
-	alarm.time.second    = 1;
+	//! [time_struct]
+	struct rtc_calendar_time alarm;
+	rtc_calendar_get_time_defaults(&alarm);
+	alarm.year   = 2015;
+	alarm.month  = 6;
+	alarm.day    = 20;
+	alarm.hour   = 0;
+	alarm.minute = 0;
+	alarm.second = 0;
+	//! [time_struct]
 
-	config_rtc_calendar.clock_24h = true;
-	config_rtc_calendar.alarm[0].time = alarm.time;
-	config_rtc_calendar.alarm[0].mask = RTC_CALENDAR_ALARM_MASK_YEAR;
+	//! [set_config]
+	config_rtc_calendar.clock_24h     = true;
+	config_rtc_calendar.alarm[0].time = alarm;
+	config_rtc_calendar.alarm[0].mask = RTC_CALENDAR_ALARM_MASK_SEC;
+	//! [set_config]
 
+	//! [init_rtc]
 	rtc_calendar_init(&rtc_instance, RTC, &config_rtc_calendar);
+	//! [init_rtc]
 
+	//! [enable]
 	rtc_calendar_enable(&rtc_instance);
+	//! [enable]
 }
 
 /**
@@ -543,6 +506,7 @@ int main(void)
 {
 	tstrWifiInitParam param;
 	int8_t ret;
+	char ping_msg[40];
 	/* Initialize the board. */
 	system_init();
 	
@@ -564,8 +528,6 @@ int main(void)
 	//! [setup_init]
 	configure_extint_channel();
 	configure_extint_callbacks();
-	
-	configure_rtc_callbacks();
 
 	system_interrupt_enable_global();
 
@@ -578,7 +540,6 @@ int main(void)
 	/* Initialize the Timer. */
 	configure_timer();
 
-	mqtt_state = MQTT_INITIALIZING;
 	/* Initialize the MQTT service. */
 	configure_mqtt();
 
@@ -596,10 +557,10 @@ int main(void)
 	/* Initialize Wi-Fi driver with data and status callbacks. */
 	param.pfAppWifiCb = wifi_callback; /* Set Wi-Fi event callback. */
 	ret = m2m_wifi_init(&param);
-	if (M2M_SUCCESS != ret) 
-	{
+	if (M2M_SUCCESS != ret) {
 		printf("main: m2m_wifi_init call error!(%d)\r\n", ret);
-		while (1); //error - spin forever
+		while (1) { /* Loop forever. */
+		}
 	}
 
 	/* Initialize socket interface. */
@@ -616,10 +577,25 @@ int main(void)
 	m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID),
 			MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
 
-	while (1) 
-	{
+	while (1) {
+		/* Handle pending events from network controller. */
 		m2m_wifi_handle_events(NULL);
 		/* Checks the timer timeout. */
 		sw_timer_task(&swt_module_inst);
+		if(new_activity)
+		{
+			new_activity = 0;
+			rtc_calendar_get_time(&rtc_instance, &time);
+			sprintf(ping_msg, "%s @ %d/%d/%d %d:%d:%d", msg, time.day, time.month, time.year, time.hour, time.minute, time.second);
+			mqtt_publish(&mqtt_inst, topic, ping_msg, strlen(ping_msg), 0, 1);
+		}
+		if (rtc_calendar_is_alarm_match(&rtc_instance, RTC_CALENDAR_ALARM_0))
+		{
+			/* Do something on RTC alarm match here */
+			rtc_calendar_clear_alarm_match(&rtc_instance, RTC_CALENDAR_ALARM_0);
+			rtc_calendar_get_time(&rtc_instance, &time);
+			sprintf(ping_msg, "Ping @ %d/%d/%d %d:%d:%d", time.month, time.day, time.year, time.hour, time.minute, time.second);
+			mqtt_publish(&mqtt_inst, "bs/monitor/ping", ping_msg, strlen(ping_msg), 0, 1);
+		}
 	}
 }

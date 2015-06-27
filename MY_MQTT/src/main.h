@@ -71,10 +71,6 @@ static const char main_mqtt_broker[] = "test.mosquitto.org";
 #define MAIN_WLAN_AUTH        M2M_WIFI_SEC_WPA_PSK /* < Security manner */
 #define MAIN_WLAN_PSK         "starwars" /* < Password for Destination SSID */
 
-void rtc_match_callback(void);
-void configure_rtc_callbacks(void);
-void configure_rtc_calendar(void);
-
 #ifdef __cplusplus
 }
 #endif
