@@ -31,12 +31,10 @@
         <options>
           <option id="common.boards" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.components.wifi.winc1500" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam0.drivers.ac" value="Add" config="callback" content-id="Atmel.ASF" />
-          <option id="sam0.drivers.extint" value="Add" config="callback" content-id="Atmel.ASF" />
           <option id="sam0.drivers.port" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam0.drivers.rtc" value="Add" config="calendar_callback" content-id="Atmel.ASF" />
           <option id="sam0.drivers.tcc" value="Add" config="callback" content-id="Atmel.ASF" />
           <option id="sam0.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam0.drivers.rtc" value="Add" config="calendar_polled" content-id="Atmel.ASF" />
           <option id="common.components.wifi.winc1500.mqtt_chat_example" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.utils" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam0.utils" value="Add" config="" content-id="Atmel.ASF" />
@@ -49,6 +47,7 @@
           <configuration key="config.sam0.drivers.sercom.spi" value="callback" default="callback" content-id="Atmel.ASF" />
           <configuration key="config.common2.services.delay" value="systick" default="systick" content-id="Atmel.ASF" />
           <configuration key="config.sam0.drivers.sercom.usart" value="callback" default="callback" content-id="Atmel.ASF" />
+          <configuration key="config.sam0.drivers.extint" value="callback" default="callback" content-id="Atmel.ASF" />
         </configurations>
         <files>
           <file path="src/ASF/common2/services/delay/delay.h" framework="" version="" source="common2/services/delay/delay.h" changed="False" content-id="Atmel.ASF" />
@@ -299,12 +298,10 @@
           <file path="src/ASF/thirdparty/CMSIS/Lib/license.txt" framework="" version="" source="thirdparty/CMSIS/Lib/license.txt" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/CMSIS/README.txt" framework="" version="" source="thirdparty/CMSIS/README.txt" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/CMSIS/license.txt" framework="" version="" source="thirdparty/CMSIS/license.txt" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/ac/ac_callback.c" framework="" version="3.24.2" source="sam0\drivers\ac\ac_callback.c" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/ac/ac_callback.h" framework="" version="3.24.2" source="sam0\drivers\ac\ac_callback.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/ac/ac.h" framework="" version="3.24.2" source="sam0\drivers\ac\ac.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/ac/ac_sam_d_r/ac.c" framework="" version="3.24.2" source="sam0\drivers\ac\ac_sam_d_r\ac.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/rtc/rtc_calendar.h" framework="" version="3.24.2" source="sam0\drivers\rtc\rtc_calendar.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/rtc/rtc_calendar_interrupt.h" framework="" version="3.24.2" source="sam0\drivers\rtc\rtc_calendar_interrupt.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/rtc/rtc_sam_d_r/rtc_calendar.c" framework="" version="3.24.2" source="sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/rtc/rtc_sam_d_r/rtc_calendar_interrupt.c" framework="" version="3.24.2" source="sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar_interrupt.c" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.24.2/common.components.wifi.winc1500.mqtt_chat_example.samw25_xplained_pro/html/index.html" />
         <offline-documentation help="" />
@@ -348,8 +345,7 @@
       <Value>SPI_CALLBACK_MODE=true</Value>
       <Value>USART_CALLBACK_MODE=true</Value>
       <Value>SYSTICK_MODE</Value>
-      <Value>AC_CALLBACK_MODE=true</Value>
-      <Value>RTC_CALENDAR_ASYNC=false</Value>
+      <Value>RTC_CALENDAR_ASYNC=true</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.DefaultIncludePath>False</armgcc.compiler.directories.DefaultIncludePath>
@@ -412,6 +408,8 @@
       <Value>../src/ASF/sam0/drivers/ac/ac_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/rtc</Value>
       <Value>../src/ASF/sam0/drivers/rtc/rtc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/events/events_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/events</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -436,7 +434,7 @@
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
   <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--cref -mthumb -T../src/ASF/sam0/utils/linker_scripts/samd21/gcc/samd21g18a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
-  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMW25_XPLAINED_PRO -DEXTINT_CALLBACK_MODE=true -DSPI_CALLBACK_MODE=true -DSYSTICK_MODE -DTCC_ASYNC=true -DUSART_CALLBACK_MODE=true -D__SAMD21G18A__ -DAC_CALLBACK_MODE=true -DRTC_CALENDAR_ASYNC=false</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMW25_XPLAINED_PRO -DEXTINT_CALLBACK_MODE=true -DSPI_CALLBACK_MODE=true -DSYSTICK_MODE -DTCC_ASYNC=true -DUSART_CALLBACK_MODE=true -D__SAMD21G18A__ -DRTC_CALENDAR_ASYNC=true</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.DefaultIncludePath>False</armgcc.preprocessingassembler.general.DefaultIncludePath>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
@@ -497,6 +495,8 @@
       <Value>../src/ASF/sam0/drivers/ac/ac_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/rtc</Value>
       <Value>../src/ASF/sam0/drivers/rtc/rtc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/events/events_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/events</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
@@ -521,8 +521,7 @@
       <Value>SPI_CALLBACK_MODE=true</Value>
       <Value>USART_CALLBACK_MODE=true</Value>
       <Value>SYSTICK_MODE</Value>
-      <Value>AC_CALLBACK_MODE=true</Value>
-      <Value>RTC_CALENDAR_ASYNC=false</Value>
+      <Value>RTC_CALENDAR_ASYNC=true</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.DefaultIncludePath>False</armgcc.compiler.directories.DefaultIncludePath>
@@ -585,6 +584,8 @@
       <Value>../src/ASF/sam0/drivers/ac/ac_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/rtc</Value>
       <Value>../src/ASF/sam0/drivers/rtc/rtc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/events/events_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/events</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
@@ -611,7 +612,7 @@
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
   <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--cref -mthumb -T../src/ASF/sam0/utils/linker_scripts/samd21/gcc/samd21g18a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
-  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMW25_XPLAINED_PRO -DEXTINT_CALLBACK_MODE=true -DSPI_CALLBACK_MODE=true -DSYSTICK_MODE -DTCC_ASYNC=true -DUSART_CALLBACK_MODE=true -D__SAMD21G18A__ -DAC_CALLBACK_MODE=true -DRTC_CALENDAR_ASYNC=false</armgcc.preprocessingassembler.general.AssemblerFlags>
+  <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM0PLUS=true -DBOARD=SAMW25_XPLAINED_PRO -DEXTINT_CALLBACK_MODE=true -DSPI_CALLBACK_MODE=true -DSYSTICK_MODE -DTCC_ASYNC=true -DUSART_CALLBACK_MODE=true -D__SAMD21G18A__ -DRTC_CALENDAR_ASYNC=true</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.DefaultIncludePath>False</armgcc.preprocessingassembler.general.DefaultIncludePath>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
@@ -672,6 +673,8 @@
       <Value>../src/ASF/sam0/drivers/ac/ac_sam_d_r</Value>
       <Value>../src/ASF/sam0/drivers/rtc</Value>
       <Value>../src/ASF/sam0/drivers/rtc/rtc_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/events/events_sam_d_r</Value>
+      <Value>../src/ASF/sam0/drivers/events</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
@@ -716,8 +719,6 @@
     <Folder Include="src\ASF\sam0\boards\" />
     <Folder Include="src\ASF\sam0\boards\samw25_xplained_pro\" />
     <Folder Include="src\ASF\sam0\drivers\" />
-    <Folder Include="src\ASF\sam0\drivers\ac\" />
-    <Folder Include="src\ASF\sam0\drivers\ac\ac_sam_d_r\" />
     <Folder Include="src\ASF\sam0\drivers\extint\" />
     <Folder Include="src\ASF\sam0\drivers\extint\extint_sam_d_r\" />
     <Folder Include="src\ASF\sam0\drivers\port\" />
@@ -1440,18 +1441,6 @@
     <Compile Include="src\ASF\sam0\boards\samw25_xplained_pro\board_init.c">
       <SubType>compile</SubType>
     </Compile>
-    <None Include="src\ASF\sam0\drivers\ac\ac.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\ASF\sam0\drivers\ac\ac_callback.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\ASF\sam0\drivers\ac\ac_callback.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\ASF\sam0\drivers\ac\ac_sam_d_r\ac.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\ASF\sam0\drivers\extint\extint_callback.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1464,7 +1453,13 @@
     <None Include="src\ASF\sam0\drivers\rtc\rtc_calendar.h">
       <SubType>compile</SubType>
     </None>
+    <None Include="src\ASF\sam0\drivers\rtc\rtc_calendar_interrupt.h">
+      <SubType>compile</SubType>
+    </None>
     <Compile Include="src\ASF\sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar_interrupt.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\ASF\sam0\drivers\sercom\sercom.c">

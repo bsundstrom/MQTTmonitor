@@ -1,7 +1,10 @@
-src/ASF/sam0/drivers/ac/ac_sam_d_r/ac.d \
- src/ASF/sam0/drivers/ac/ac_sam_d_r/ac.o: \
- ../src/ASF/sam0/drivers/ac/ac_sam_d_r/ac.c \
- ../src/ASF/sam0/drivers/ac/ac.h ../src/ASF/sam0/utils/compiler.h \
+src/ASF/sam0/drivers/rtc/rtc_sam_d_r/rtc_calendar_interrupt.d \
+ src/ASF/sam0/drivers/rtc/rtc_sam_d_r/rtc_calendar_interrupt.o: \
+ ../src/ASF/sam0/drivers/rtc/rtc_sam_d_r/rtc_calendar_interrupt.c \
+ ../src/ASF/sam0/drivers/rtc/rtc_calendar_interrupt.h \
+ ../src/ASF/sam0/drivers/rtc/rtc_calendar.h ../src/config/conf_clocks.h \
+ ../src/ASF/sam0/drivers/system/clock/clock.h \
+ ../src/ASF/sam0/utils/compiler.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include\stddef.h \
  ../src/ASF/common/utils/parts.h ../src/ASF/sam0/utils/status_codes.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include\stdint.h \
@@ -97,11 +100,18 @@ src/ASF/sam0/drivers/ac/ac_sam_d_r/ac.d \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\alloca.h \
  ../src/ASF/common/utils/interrupt.h \
  ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.h \
- ../src/ASF/sam0/drivers/system/clock/clock.h \
  ../src/ASF/sam0/drivers/system/clock/gclk.h \
- ../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da/clock_feature.h
+ ../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da/clock_feature.h \
+ ../src/ASF/sam0/drivers/system/interrupt/system_interrupt.h \
+ ../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21/system_interrupt_features.h
 
-../src/ASF/sam0/drivers/ac/ac.h:
+../src/ASF/sam0/drivers/rtc/rtc_calendar_interrupt.h:
+
+../src/ASF/sam0/drivers/rtc/rtc_calendar.h:
+
+../src/config/conf_clocks.h:
+
+../src/ASF/sam0/drivers/system/clock/clock.h:
 
 ../src/ASF/sam0/utils/compiler.h:
 
@@ -297,8 +307,10 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 
 ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.h:
 
-../src/ASF/sam0/drivers/system/clock/clock.h:
-
 ../src/ASF/sam0/drivers/system/clock/gclk.h:
 
 ../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da/clock_feature.h:
+
+../src/ASF/sam0/drivers/system/interrupt/system_interrupt.h:
+
+../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21/system_interrupt_features.h:

@@ -36,10 +36,6 @@ src\ASF\common\utils\interrupt\interrupt_sam_nvic.c
 
 src\ASF\sam0\boards\samw25_xplained_pro\board_init.c
 
-src\ASF\sam0\drivers\ac\ac_callback.c
-
-src\ASF\sam0\drivers\ac\ac_sam_d_r\ac.c
-
 src\ASF\sam0\drivers\extint\extint_callback.c
 
 src\ASF\sam0\drivers\extint\extint_sam_d_r\extint.c
@@ -47,6 +43,8 @@ src\ASF\sam0\drivers\extint\extint_sam_d_r\extint.c
 src\ASF\sam0\drivers\port\port.c
 
 src\ASF\sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar.c
+
+src\ASF\sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar_interrupt.c
 
 src\ASF\sam0\drivers\sercom\sercom.c
 

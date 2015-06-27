@@ -52,10 +52,6 @@
  * running the ASF driver selector tool. Any changes will be discarded.
  */
 
-// From module: AC - Analog Comparator (Callback APIs)
-#include <ac.h>
-#include <ac_callback.h>
-
 // From module: Common SAM0 compiler driver
 #include <compiler.h>
 #include <status_codes.h>
@@ -79,8 +75,9 @@
 // From module: Part identification macros
 #include <parts.h>
 
-// From module: RTC - Real Time Counter in Calendar Mode (Polled APIs)
+// From module: RTC - Real Time Counter in Calendar Mode (Callback APIs)
 #include <rtc_calendar.h>
+#include <rtc_calendar_interrupt.h>
 
 // From module: SERCOM Callback API
 #include <sercom.h>
