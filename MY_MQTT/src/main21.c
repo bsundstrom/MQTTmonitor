@@ -103,13 +103,16 @@
 
 /* Application instruction phrase. */
 #define STRING_EOL    "\r\n"
-#define STRING_HEADER "-- WINC1500 Wi-Fi MQTT chat example --"STRING_EOL \
+#define STRING_HEADER "-- MY MQTT Monitor --"STRING_EOL \
 	"-- "BOARD_NAME " --"STRING_EOL	\
 	"-- Compiled: "__DATE__ " "__TIME__ " --"STRING_EOL
 
-char topic[256];
-char msg[MAIN_CHAT_BUFFER_SIZE];
+char glb_topic[256];
+char glb_msg[MAIN_CHAT_BUFFER_SIZE];
 uint8_t new_activity;
+uint8_t rtc_activity;
+struct rtc_calendar_alarm_time alarm;
+struct rtc_calendar_time time;
 
 //! [rtc_module_instance]
 struct rtc_module rtc_instance;
@@ -180,8 +183,19 @@ static void wifi_callback(uint8 msg_type, void *msg_data)
 {
 	tstrM2mWifiStateChanged *msg_wifi_state;
 	uint8 *msg_ip_addr;
+	tstrM2MConnInfo     *pstrConnInfo = (tstrM2MConnInfo*)msg_data;
 
 	switch (msg_type) {
+		
+	case M2M_WIFI_RESP_CONN_INFO:
+		printf("CONNECTED AP INFO\n");
+		printf("SSID                : %s\n",pstrConnInfo->acSSID);
+		printf("SEC TYPE            : %d\n",pstrConnInfo->u8SecType);
+		printf("Signal Strength     : %d\n", pstrConnInfo->s8RSSI);
+		printf("Local IP Address    : %d.%d.%d.%d\r\n",
+		pstrConnInfo->au8IPAddr[0] , pstrConnInfo->au8IPAddr[1], pstrConnInfo->au8IPAddr[2], pstrConnInfo->au8IPAddr[3]);
+		break;
+		
 	case M2M_WIFI_RESP_CON_STATE_CHANGED:
 		msg_wifi_state = (tstrM2mWifiStateChanged *)msg_data;
 		if (msg_wifi_state->u8CurrState == M2M_WIFI_CONNECTED) {
@@ -202,10 +216,11 @@ static void wifi_callback(uint8 msg_type, void *msg_data)
 
 	case M2M_WIFI_REQ_DHCP_CONF:
 		msg_ip_addr = (uint8 *)msg_data;
-		printf("Wi-Fi IP is %u.%u.%u.%u\r\n",
+		printf("DHCP Complete.\r\nWi-Fi IP is %u.%u.%u.%u\r\n",
 				msg_ip_addr[0], msg_ip_addr[1], msg_ip_addr[2], msg_ip_addr[3]);
 		/* Try to connect to MQTT broker when Wi-Fi was connected. */
 		mqtt_connect(&mqtt_inst, main_mqtt_broker);
+		m2m_wifi_get_connection_info();
 		break;
 
 	default:
@@ -247,7 +262,6 @@ static void socket_resolve_handler(uint8_t *doamin_name, uint32_t server_ip)
 void SetRTCTime(char *topic, char *msg)
 {
 	int8_t num;
-	struct rtc_calendar_time time;
 	
 	rtc_calendar_get_time(&rtc_instance, &time);
 	
@@ -319,7 +333,7 @@ static void mqtt_callback(struct mqtt_module *module_inst, int type, union mqtt_
 		if (data->sock_connected.result >= 0) {
 			mqtt_connect_broker(module_inst, 1, NULL, NULL, mqtt_user, NULL, NULL, 0, 0, 0);
 		} else {
-			printf("Connect fail to server(%s)! retry it automatically.\r\n", main_mqtt_broker);
+			printf("Failed to connect to (%s)! Automatically retrying...\r\n", main_mqtt_broker);
 			mqtt_connect(module_inst, main_mqtt_broker); /* Retry that. */
 		}
 	}
@@ -331,7 +345,7 @@ static void mqtt_callback(struct mqtt_module *module_inst, int type, union mqtt_
 			mqtt_subscribe(module_inst, MAIN_CHAT_TOPIC "#", 0);
 			/* Enable USART receiving callback. */
 			usart_enable_callback(&cdc_uart_module, USART_CALLBACK_BUFFER_RECEIVED);
-			printf("Preparation of the chat has been completed.\r\n");
+			printf("MQTT Connection Accepted.\r\n");
 		} else {
 			/* Cannot connect for some reason. */
 			printf("MQTT broker decline your access! error code %d\r\n", data->connected.result);
@@ -432,13 +446,13 @@ void extint_detection_callback(void)
 	bool pin_state = port_pin_get_input_level(BUTTON_0_PIN);
 	if(pin_state)
 	{
-		strcpy(msg, "Open");
-		printf("Sending: %s to %s\n", msg, MAIN_CHAT_TOPIC);
+		strcpy(glb_msg, "Open");
+		printf("Sending: %s to %s\n", glb_msg, MAIN_CHAT_TOPIC);
 	}
 	else if(!pin_state)
 	{
-		strcpy(msg, "Closed");
-		printf("%s\n", msg);
+		strcpy(glb_msg, "Closed");
+		printf("%s\n", glb_msg);
 	}
 	new_activity = 1;
 }
@@ -452,47 +466,51 @@ void configure_extint_callbacks(void)
 	EXTINT_CALLBACK_TYPE_DETECT);
 }
 
-
-
-void configure_rtc_calendar(void);
-
-//! [rtc_module_instance]
-
-//! [initiate]
 void configure_rtc_calendar(void)
 {
 	/* Initialize RTC in calendar mode. */
-	//! [set_conf]
 	struct rtc_calendar_config config_rtc_calendar;
-	//! [set_conf]
-	//! [get_default]
 	rtc_calendar_get_config_defaults(&config_rtc_calendar);
-	//! [get_default]
-
-	//! [time_struct]
-	struct rtc_calendar_time alarm;
-	rtc_calendar_get_time_defaults(&alarm);
-	alarm.year   = 2015;
-	alarm.month  = 6;
-	alarm.day    = 20;
-	alarm.hour   = 0;
-	alarm.minute = 0;
-	alarm.second = 0;
-	//! [time_struct]
-
-	//! [set_config]
+	
+	time.year   = 2015;
+	time.month  = 1;
+	time.day    = 1;
+	time.hour   = 0;
+	time.minute = 0;
+	time.second = 0;
+		
+	alarm.time.day = time.day;
+	alarm.time.hour = time.hour;
+	alarm.time.minute = time.minute;
+	alarm.time.month = time.month;
+	alarm.time.pm = time.pm;
+	alarm.time.year = time.year;
+	alarm.time.second = time.second;
+	alarm.time.second += 5;
+	alarm.time.second = alarm.time.second % 60;
+	
 	config_rtc_calendar.clock_24h     = true;
-	config_rtc_calendar.alarm[0].time = alarm;
+	config_rtc_calendar.alarm[0].time = alarm.time;
 	config_rtc_calendar.alarm[0].mask = RTC_CALENDAR_ALARM_MASK_SEC;
-	//! [set_config]
-
-	//! [init_rtc]
 	rtc_calendar_init(&rtc_instance, RTC, &config_rtc_calendar);
-	//! [init_rtc]
-
-	//! [enable]
 	rtc_calendar_enable(&rtc_instance);
-	//! [enable]
+}
+
+void configure_rtc_callbacks(void)
+{
+	rtc_calendar_register_callback(&rtc_instance, rtc_match_callback, RTC_CALENDAR_CALLBACK_ALARM_0);
+	rtc_calendar_enable_callback(&rtc_instance, RTC_CALENDAR_CALLBACK_ALARM_0);
+}
+
+void rtc_match_callback(void)
+{
+
+	alarm.mask = RTC_CALENDAR_ALARM_MASK_SEC;
+
+	alarm.time.second += 5;
+	alarm.time.second = alarm.time.second % 60;
+
+	rtc_calendar_set_alarm(&rtc_instance, &alarm, RTC_CALENDAR_ALARM_0);
 }
 
 /**
@@ -506,26 +524,16 @@ int main(void)
 {
 	tstrWifiInitParam param;
 	int8_t ret;
-	char ping_msg[40];
+	char ping_msg[64];
+	
 	/* Initialize the board. */
 	system_init();
-	
-	struct rtc_calendar_time time;
-	time.year   = 2015;
-	time.month  = 1;
-	time.day    = 1;
-	time.hour   = 0;
-	time.minute = 0;
-	time.second = 0;
 
 	configure_rtc_calendar();
-
-	/* Set current time. */
+	configure_rtc_callbacks();
 	rtc_calendar_set_time(&rtc_instance, &time);
-
 	rtc_calendar_swap_time_mode(&rtc_instance);
 	
-	//! [setup_init]
 	configure_extint_channel();
 	configure_extint_callbacks();
 
@@ -548,8 +556,8 @@ int main(void)
 
 	/* Setup user name first */
 	strcpy(mqtt_user, "reed_switch");
-	sprintf(topic, "%s%s", MAIN_CHAT_TOPIC, mqtt_user);
-	printf("Publishing to topic: %s\r\n", topic);
+	sprintf(glb_topic, "%s%s", MAIN_CHAT_TOPIC, mqtt_user);
+	printf("Publishing to topic: %s\r\n", glb_topic);
 
 	/* Initialize Wi-Fi parameters structure. */
 	memset((uint8_t *)&param, 0, sizeof(tstrWifiInitParam));
@@ -559,9 +567,9 @@ int main(void)
 	ret = m2m_wifi_init(&param);
 	if (M2M_SUCCESS != ret) {
 		printf("main: m2m_wifi_init call error!(%d)\r\n", ret);
-		while (1) { /* Loop forever. */
-		}
+		while (1);
 	}
+
 
 	/* Initialize socket interface. */
 	socketInit();
@@ -586,11 +594,12 @@ int main(void)
 		{
 			new_activity = 0;
 			rtc_calendar_get_time(&rtc_instance, &time);
-			sprintf(ping_msg, "%s @ %d/%d/%d %d:%d:%d", msg, time.day, time.month, time.year, time.hour, time.minute, time.second);
-			mqtt_publish(&mqtt_inst, topic, ping_msg, strlen(ping_msg), 0, 1);
+			sprintf(ping_msg, "%s @ %d/%d/%d %d:%d:%d", glb_msg, time.day, time.month, time.year, time.hour, time.minute, time.second);
+			mqtt_publish(&mqtt_inst, glb_topic, ping_msg, strlen(ping_msg), 0, 1);
 		}
-		if (rtc_calendar_is_alarm_match(&rtc_instance, RTC_CALENDAR_ALARM_0))
+		if (rtc_activity)
 		{
+			rtc_activity = 0;
 			/* Do something on RTC alarm match here */
 			rtc_calendar_clear_alarm_match(&rtc_instance, RTC_CALENDAR_ALARM_0);
 			rtc_calendar_get_time(&rtc_instance, &time);
@@ -598,4 +607,13 @@ int main(void)
 			mqtt_publish(&mqtt_inst, "bs/monitor/ping", ping_msg, strlen(ping_msg), 0, 1);
 		}
 	}
+}
+
+void mqtt_wake_publish_sleep(struct mqtt_module *const module, const char *mqtttopic, const char *mqttmsg, uint32_t msg_len, uint8_t qos, uint8_t retain)
+{
+	
+	m2m_wifi_handle_events(NULL);
+	sw_timer_task(&swt_module_inst);	
+	mqtt_publish(module, mqtttopic, mqttmsg, msg_len, qos, retain);
+	mqtt_disconnect(module, 0);
 }

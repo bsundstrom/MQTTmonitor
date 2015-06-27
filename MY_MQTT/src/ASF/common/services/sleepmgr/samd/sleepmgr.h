@@ -1,9 +1,9 @@
 /**
  * \file
  *
- * \brief MAIN configuration.
+ * \brief Chip-specific sleep manager configuration
  *
- * Copyright (c) 2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2014-2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,46 +40,89 @@
  * \asf_license_stop
  *
  */
+/*
+ * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
+ */
 
-#ifndef MAIN_H_INCLUDED
-#define MAIN_H_INCLUDED
+#ifndef SAM_SLEEPMGR_INCLUDED
+#define SAM_SLEEPMGR_INCLUDED
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Max size of UART buffer. */
-#define MAIN_CHAT_BUFFER_SIZE 64
+#include <compiler.h>
+#include <conf_sleepmgr.h>
+#include <interrupt.h>
+#include "system.h"
 
-/* Max size of MQTT buffer. */
-#define MAIN_MQTT_BUFFER_SIZE 128
-
-/* Limitation of user name. */
-#define MAIN_CHAT_USER_NAME_SIZE 64
-
-/* Chat MQTT topic. */
-#define MAIN_CHAT_TOPIC "bs/monitor/"
-
-/*
- * A MQTT broker server which was connected.
- * test.mosquitto.org is public MQTT broker.
+/**
+ * \weakgroup sleepmgr_group
+ * @{
  */
-static const char main_mqtt_broker[] = "test.mosquitto.org";
 
-/** Wi-Fi Settings */
-#define MAIN_WLAN_SSID        "yavin" /* < Destination SSID */
-#define MAIN_WLAN_AUTH        M2M_WIFI_SEC_WPA_PSK /* < Security manner */
-#define MAIN_WLAN_PSK         "starwars" /* < Password for Destination SSID */
+enum sleepmgr_mode {
+	/** Active mode. */
+	SLEEPMGR_ACTIVE = 0,
 
-void extint_detection_callback(void);
-void configure_extint_callbacks(void);
-void configure_rtc_calendar(void);
-void configure_extint_channel(void);
+	/**
+	 *  Idle 0 mode.
+	 *  Potential Wake Up sources: Synchronous(APB, AHB), asynchronous.
+	 */
+	SLEEPMGR_IDLE_0,
 
-void rtc_match_callback(void);
+	/**
+	 *  Idle 1 mode.
+	 *  Potential Wake Up sources: Synchronous (APB), asynchronous
+	 */
+	SLEEPMGR_IDLE_1,
+
+	/**
+	 *  Idle 2 mode.
+	 *  Potential Wake Up sources: Asynchronous
+	 */
+	SLEEPMGR_IDLE_2,
+
+	/**
+	 * Standby mode.
+	 * Potential Wake Up sources: Asynchronous
+	 */
+	SLEEPMGR_STANDBY,
+
+	SLEEPMGR_NR_OF_MODES,
+};
+
+/**
+ * \internal
+ * \name Internal arrays
+ * @{
+ */
+#if defined(CONFIG_SLEEPMGR_ENABLE) || defined(__DOXYGEN__)
+/** Sleep mode lock counters */
+extern uint8_t sleepmgr_locks[];
+#endif /* CONFIG_SLEEPMGR_ENABLE */
+/** @} */
+
+static inline void sleepmgr_sleep(const enum sleepmgr_mode sleep_mode)
+{
+	Assert(sleep_mode != SLEEPMGR_ACTIVE);
+#ifdef CONFIG_SLEEPMGR_ENABLE
+	cpu_irq_disable();
+
+	/* Enter the sleep mode. */
+	system_set_sleepmode((enum system_sleepmode)(sleep_mode - 1));
+	cpu_irq_enable();
+	system_sleep();
+#else
+	UNUSED(sleep_mode);
+	cpu_irq_enable();
+#endif /* CONFIG_SLEEPMGR_ENABLE */
+}
+
+/** @} */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* MAIN_H_INCLUDED */
+#endif /* SAM_SLEEPMGR_INCLUDED */

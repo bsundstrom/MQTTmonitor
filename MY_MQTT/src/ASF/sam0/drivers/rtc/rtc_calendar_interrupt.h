@@ -1,9 +1,9 @@
 /**
  * \file
  *
- * \brief MAIN configuration.
+ * \brief SAM RTC Driver (Calendar Interrupt Mode)
  *
- * Copyright (c) 2015 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2013-2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,46 +40,50 @@
  * \asf_license_stop
  *
  */
+/*
+ * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
+ */
 
-#ifndef MAIN_H_INCLUDED
-#define MAIN_H_INCLUDED
+#ifndef RTC_CALENDAR_INTERRUPT_H_INCLUDED
+#define RTC_CALENDAR_INTERRUPT_H_INCLUDED
+
+#include "rtc_calendar.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Max size of UART buffer. */
-#define MAIN_CHAT_BUFFER_SIZE 64
-
-/* Max size of MQTT buffer. */
-#define MAIN_MQTT_BUFFER_SIZE 128
-
-/* Limitation of user name. */
-#define MAIN_CHAT_USER_NAME_SIZE 64
-
-/* Chat MQTT topic. */
-#define MAIN_CHAT_TOPIC "bs/monitor/"
-
-/*
- * A MQTT broker server which was connected.
- * test.mosquitto.org is public MQTT broker.
+/**
+ * \addtogroup asfdoc_sam0_rtc_calendar_group
+ * @{
  */
-static const char main_mqtt_broker[] = "test.mosquitto.org";
 
-/** Wi-Fi Settings */
-#define MAIN_WLAN_SSID        "yavin" /* < Destination SSID */
-#define MAIN_WLAN_AUTH        M2M_WIFI_SEC_WPA_PSK /* < Security manner */
-#define MAIN_WLAN_PSK         "starwars" /* < Password for Destination SSID */
+ /**
+ * \name Callbacks
+ * @{
+ */
+enum status_code rtc_calendar_register_callback(
+		struct rtc_module *const module,
+		rtc_calendar_callback_t callback,
+		enum rtc_calendar_callback callback_type);
 
-void extint_detection_callback(void);
-void configure_extint_callbacks(void);
-void configure_rtc_calendar(void);
-void configure_extint_channel(void);
+enum status_code rtc_calendar_unregister_callback(
+		struct rtc_module *const module,
+		enum rtc_calendar_callback callback_type);
 
-void rtc_match_callback(void);
+void rtc_calendar_enable_callback(
+		struct rtc_module *const module,
+		enum rtc_calendar_callback callback_type);
+
+void rtc_calendar_disable_callback(
+	struct rtc_module *const module,
+	enum rtc_calendar_callback callback_type);
+
+/** @} */
+/** @} */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* MAIN_H_INCLUDED */
+#endif /* RTC_CALENDAR_INTERRUPT_H_INCLUDED */

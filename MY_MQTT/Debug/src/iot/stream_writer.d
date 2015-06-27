@@ -117,6 +117,8 @@ src/iot/stream_writer.d src/iot/stream_writer.o: \
  ../src/ASF/sam0/boards/samw25_xplained_pro/samw25_xplained_pro.h \
  ../src/config/conf_board.h ../src/ASF/sam0/drivers/port/port.h \
  ../src/ASF/sam0/drivers/rtc/rtc_calendar.h ../src/config/conf_clocks.h \
+ ../src/ASF/sam0/drivers/rtc/rtc_calendar_interrupt.h \
+ ../src/ASF/sam0/drivers/rtc/rtc_calendar.h \
  ../src/ASF/sam0/drivers/sercom/sercom.h \
  ../src/ASF/sam0/drivers/system/system.h \
  ../src/ASF/sam0/drivers/system/power/power_sam_d_r/power.h \
@@ -130,6 +132,10 @@ src/iot/stream_writer.d src/iot/stream_writer.o: \
  ../src/ASF/sam0/drivers/sercom/usart/usart.h \
  ../src/ASF/sam0/drivers/sercom/usart/usart_interrupt.h \
  ../src/ASF/sam0/drivers/sercom/usart/usart.h \
+ ../src/ASF/common/services/sleepmgr/samd/sleepmgr.h \
+ ../src/config/conf_sleepmgr.h \
+ ../src/ASF/common/services/sleepmgr/sleepmgr.h \
+ ../src/ASF/common/services/sleepmgr/samd/sleepmgr.h \
  ../src/ASF/sam0/utils/stdio/stdio_serial/stdio_serial.h \
  ../src/ASF/common/services/serial/serial.h \
  ../src/ASF/common/services/serial/sam0_usart/usart_serial.h \
@@ -381,6 +387,10 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 
 ../src/config/conf_clocks.h:
 
+../src/ASF/sam0/drivers/rtc/rtc_calendar_interrupt.h:
+
+../src/ASF/sam0/drivers/rtc/rtc_calendar.h:
+
 ../src/ASF/sam0/drivers/sercom/sercom.h:
 
 ../src/ASF/sam0/drivers/system/system.h:
@@ -408,6 +418,14 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/ASF/sam0/drivers/sercom/usart/usart_interrupt.h:
 
 ../src/ASF/sam0/drivers/sercom/usart/usart.h:
+
+../src/ASF/common/services/sleepmgr/samd/sleepmgr.h:
+
+../src/config/conf_sleepmgr.h:
+
+../src/ASF/common/services/sleepmgr/sleepmgr.h:
+
+../src/ASF/common/services/sleepmgr/samd/sleepmgr.h:
 
 ../src/ASF/sam0/utils/stdio/stdio_serial/stdio_serial.h:
 

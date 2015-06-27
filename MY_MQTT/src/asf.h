@@ -79,8 +79,9 @@
 // From module: Part identification macros
 #include <parts.h>
 
-// From module: RTC - Real Time Counter in Calendar Mode (Polled APIs)
+// From module: RTC - Real Time Counter in Calendar Mode (Callback APIs)
 #include <rtc_calendar.h>
+#include <rtc_calendar_interrupt.h>
 
 // From module: SERCOM Callback API
 #include <sercom.h>
@@ -112,6 +113,10 @@
 
 // From module: SYSTEM - Reset Management for SAM D20/D21/R21/D10/D11/DA0/DA1
 #include <reset.h>
+
+// From module: Sleep manager - SAMD implementation
+#include <samd/sleepmgr.h>
+#include <sleepmgr.h>
 
 // From module: Standard serial I/O (stdio)
 #include <stdio_serial.h>
