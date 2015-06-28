@@ -75,6 +75,7 @@ void extint_detection_callback(void);
 void configure_extint_callbacks(void);
 void configure_rtc_calendar(void);
 void configure_extint_channel(void);
+void set_next_rtc_alarm(uint32_t num_of_seconds);
 
 void rtc_match_callback(void);
 

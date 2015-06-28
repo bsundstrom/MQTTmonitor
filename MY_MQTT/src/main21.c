@@ -112,7 +112,6 @@ char glb_msg[MAIN_CHAT_BUFFER_SIZE];
 uint8_t new_activity;
 uint8_t rtc_activity;
 struct rtc_calendar_alarm_time alarm;
-struct rtc_calendar_time time;
 
 //! [rtc_module_instance]
 struct rtc_module rtc_instance;
@@ -200,7 +199,7 @@ static void wifi_callback(uint8 msg_type, void *msg_data)
 		msg_wifi_state = (tstrM2mWifiStateChanged *)msg_data;
 		if (msg_wifi_state->u8CurrState == M2M_WIFI_CONNECTED) {
 			/* If Wi-Fi is connected. */
-			printf("Wi-Fi connected\r\n");
+			printf("Wi-Fi connected - Requesting DHCP...\r\n");
 			m2m_wifi_request_dhcp_client();
 		} else if (msg_wifi_state->u8CurrState == M2M_WIFI_DISCONNECTED) {
 			/* If Wi-Fi is disconnected. */
@@ -262,7 +261,7 @@ static void socket_resolve_handler(uint8_t *doamin_name, uint32_t server_ip)
 void SetRTCTime(char *topic, char *msg)
 {
 	int8_t num;
-	
+	struct rtc_calendar_time time;
 	rtc_calendar_get_time(&rtc_instance, &time);
 	
 	if (topic != NULL && msg != NULL)
@@ -365,9 +364,6 @@ static void mqtt_callback(struct mqtt_module *module_inst, int type, union mqtt_
 	}
 }
 
-/**
- * \brief Configure UART console.
- */
 static void configure_console(void)
 {
 	struct usart_config usart_conf;
@@ -386,9 +382,6 @@ static void configure_console(void)
 	usart_enable(&cdc_uart_module);
 }
 
-/**
- * \brief Configure Timer module.
- */
 static void configure_timer(void)
 {
 	struct sw_timer_config swt_conf;
@@ -398,9 +391,6 @@ static void configure_timer(void)
 	sw_timer_enable(&swt_module_inst);
 }
 
-/**
- * \brief Configure MQTT service.
- */
 static void configure_mqtt(void)
 {
 	struct mqtt_config mqtt_conf;
@@ -415,15 +405,13 @@ static void configure_mqtt(void)
 	result = mqtt_init(&mqtt_inst, &mqtt_conf);
 	if (result < 0) {
 		printf("MQTT initialization failed. Error code is (%d)\r\n", result);
-		while (1) {
-		}
+		while (1);
 	}
 
 	result = mqtt_register_callback(&mqtt_inst, mqtt_callback);
 	if (result < 0) {
 		printf("MQTT register callback failed. Error code is (%d)\r\n", result);
-		while (1) {
-		}
+		while (1);
 	}
 }
 
@@ -440,58 +428,32 @@ void configure_extint_channel(void)
 	extint_chan_set_config(BUTTON_0_EIC_LINE, &config_extint_chan);
 }
 
-//! [setup_7]
 void extint_detection_callback(void)
 {
 	bool pin_state = port_pin_get_input_level(BUTTON_0_PIN);
 	if(pin_state)
-	{
 		strcpy(glb_msg, "Open");
-		printf("Sending: %s to %s\n", glb_msg, MAIN_CHAT_TOPIC);
-	}
 	else if(!pin_state)
-	{
 		strcpy(glb_msg, "Closed");
-		printf("%s\n", glb_msg);
-	}
 	new_activity = 1;
 }
 
 void configure_extint_callbacks(void)
 {
-	extint_register_callback(extint_detection_callback,
-	BUTTON_0_EIC_LINE,
-	EXTINT_CALLBACK_TYPE_DETECT);
-	extint_chan_enable_callback(BUTTON_0_EIC_LINE,
-	EXTINT_CALLBACK_TYPE_DETECT);
+	extint_register_callback(extint_detection_callback, BUTTON_0_EIC_LINE, EXTINT_CALLBACK_TYPE_DETECT);
+	extint_chan_enable_callback(BUTTON_0_EIC_LINE, EXTINT_CALLBACK_TYPE_DETECT);
 }
 
 void configure_rtc_calendar(void)
 {
 	/* Initialize RTC in calendar mode. */
 	struct rtc_calendar_config config_rtc_calendar;
-	rtc_calendar_get_config_defaults(&config_rtc_calendar);
 	
-	time.year   = 2015;
-	time.month  = 1;
-	time.day    = 1;
-	time.hour   = 0;
-	time.minute = 0;
-	time.second = 0;
-		
-	alarm.time.day = time.day;
-	alarm.time.hour = time.hour;
-	alarm.time.minute = time.minute;
-	alarm.time.month = time.month;
-	alarm.time.pm = time.pm;
-	alarm.time.year = time.year;
-	alarm.time.second = time.second;
-	alarm.time.second += 5;
-	alarm.time.second = alarm.time.second % 60;
+	rtc_calendar_get_config_defaults(&config_rtc_calendar);
 	
 	config_rtc_calendar.clock_24h     = true;
 	config_rtc_calendar.alarm[0].time = alarm.time;
-	config_rtc_calendar.alarm[0].mask = RTC_CALENDAR_ALARM_MASK_SEC;
+	config_rtc_calendar.alarm[0].mask = RTC_CALENDAR_ALARM_MASK_YEAR;
 	rtc_calendar_init(&rtc_instance, RTC, &config_rtc_calendar);
 	rtc_calendar_enable(&rtc_instance);
 }
@@ -504,35 +466,67 @@ void configure_rtc_callbacks(void)
 
 void rtc_match_callback(void)
 {
-
-	alarm.mask = RTC_CALENDAR_ALARM_MASK_SEC;
-
-	alarm.time.second += 5;
-	alarm.time.second = alarm.time.second % 60;
-
-	rtc_calendar_set_alarm(&rtc_instance, &alarm, RTC_CALENDAR_ALARM_0);
+	set_next_rtc_alarm(60);
+	rtc_activity = 1;
 }
 
-/**
- * \brief Main application function.
- *
- * Application entry point.
- *
- * \return program return value.
- */
+void set_next_rtc_alarm(uint32_t num_of_seconds)
+{
+	struct rtc_calendar_time my_time;
+	rtc_calendar_get_time(&rtc_instance, &my_time);
+	alarm.time.day = my_time.day;
+	alarm.time.hour = my_time.hour;
+	alarm.time.minute = my_time.minute;
+	alarm.time.month = my_time.month;
+	alarm.time.pm = my_time.pm;
+	alarm.time.year = my_time.year;
+	alarm.time.second = my_time.second;	
+	if(num_of_seconds < 60)
+	{
+		alarm.mask = RTC_CALENDAR_ALARM_MASK_SEC;
+		alarm.time.second += num_of_seconds;
+		alarm.time.second = alarm.time.second % 60;
+	}
+	else if(num_of_seconds < (60 * 60)) //time span is greater than an minute
+	{
+		alarm.mask = RTC_CALENDAR_ALARM_MASK_MIN;
+		alarm.time.minute += num_of_seconds / 60;
+		alarm.time.minute = alarm.time.minute % 60;		
+	}
+	else if(num_of_seconds < (3600 * 24)) //time span is greater than an hour
+	{
+		alarm.mask = RTC_CALENDAR_ALARM_MASK_HOUR;
+		alarm.time.minute += num_of_seconds / 3600;
+		alarm.time.minute = alarm.time.hour % (3600 * 24);		
+	}
+	else
+	{
+		printf("FAILURE TO SET ALARM - Value too high!"); //time span can't exceed 23:59:59 hours
+		return;
+	}
+	rtc_calendar_set_alarm(&rtc_instance, &alarm, RTC_CALENDAR_ALARM_0);	
+}
+
 int main(void)
 {
 	tstrWifiInitParam param;
 	int8_t ret;
 	char ping_msg[64];
-	
+	struct rtc_calendar_time my_time;
 	/* Initialize the board. */
 	system_init();
 
 	configure_rtc_calendar();
 	configure_rtc_callbacks();
-	rtc_calendar_set_time(&rtc_instance, &time);
+	my_time.year   = 2015;
+	my_time.month  = 1;
+	my_time.day    = 1;
+	my_time.hour   = 0;
+	my_time.minute = 0;
+	my_time.second = 0;
+	rtc_calendar_set_time(&rtc_instance, &my_time);
 	rtc_calendar_swap_time_mode(&rtc_instance);
+	set_next_rtc_alarm(60);
 	
 	configure_extint_channel();
 	configure_extint_callbacks();
@@ -593,17 +587,18 @@ int main(void)
 		if(new_activity)
 		{
 			new_activity = 0;
-			rtc_calendar_get_time(&rtc_instance, &time);
-			sprintf(ping_msg, "%s @ %d/%d/%d %d:%d:%d", glb_msg, time.day, time.month, time.year, time.hour, time.minute, time.second);
+			rtc_calendar_get_time(&rtc_instance, &my_time);
+			sprintf(ping_msg, "%s @ %d/%d/%d %d:%d:%d", glb_msg, my_time.day, my_time.month, my_time.year, my_time.hour, my_time.minute, my_time.second);
+			printf("Sending: '%s' to %s\n", glb_msg, MAIN_CHAT_TOPIC);
 			mqtt_publish(&mqtt_inst, glb_topic, ping_msg, strlen(ping_msg), 0, 1);
 		}
 		if (rtc_activity)
 		{
 			rtc_activity = 0;
 			/* Do something on RTC alarm match here */
-			rtc_calendar_clear_alarm_match(&rtc_instance, RTC_CALENDAR_ALARM_0);
-			rtc_calendar_get_time(&rtc_instance, &time);
-			sprintf(ping_msg, "Ping @ %d/%d/%d %d:%d:%d", time.month, time.day, time.year, time.hour, time.minute, time.second);
+			rtc_calendar_get_time(&rtc_instance, &my_time);
+			sprintf(ping_msg, "Ping @ %d/%d/%d %d:%d:%d", my_time.month, my_time.day, my_time.year, my_time.hour, my_time.minute, my_time.second);
+			printf("Sending ping message: %s", ping_msg);
 			mqtt_publish(&mqtt_inst, "bs/monitor/ping", ping_msg, strlen(ping_msg), 0, 1);
 		}
 	}
