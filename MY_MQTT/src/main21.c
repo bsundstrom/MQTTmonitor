@@ -101,6 +101,8 @@
 #include "iot/sw_timer.h"
 #include "socket/include/socket.h"
 
+#define MAIN_PS_SLEEP_MODE M2M_PS_DEEP_AUTOMATIC
+
 /* Application instruction phrase. */
 #define STRING_EOL    "\r\n"
 #define STRING_HEADER "-- MY MQTT Monitor --"STRING_EOL \
@@ -109,8 +111,8 @@
 
 char glb_topic[256];
 char glb_msg[MAIN_CHAT_BUFFER_SIZE];
-uint8_t new_activity;
-uint8_t rtc_activity;
+volatile uint8_t new_activity;
+volatile uint8_t rtc_activity;
 struct rtc_calendar_alarm_time alarm;
 
 //! [rtc_module_instance]
@@ -140,11 +142,15 @@ static int uart_buffer_written = 0;
 /** A buffer of character from the serial. */
 static uint16_t uart_ch_buffer;
 
-/**
- * \brief Callback of USART input.
- *
- * \param[in] module USART module structure.
- */
+enum mqtt_connection_states
+{
+	
+	DISCONNECTED,
+	CONNECTING,
+	CONNECTED,
+	DISCONNECTING
+} mqtt_connection_state;
+
 static void uart_callback(const struct usart_module *const module)
 {
 	/* If input string is bigger than buffer size limit, ignore the excess part. */
@@ -184,8 +190,8 @@ static void wifi_callback(uint8 msg_type, void *msg_data)
 	uint8 *msg_ip_addr;
 	tstrM2MConnInfo     *pstrConnInfo = (tstrM2MConnInfo*)msg_data;
 
-	switch (msg_type) {
-		
+	switch (msg_type) 
+	{	
 	case M2M_WIFI_RESP_CONN_INFO:
 		printf("CONNECTED AP INFO\n");
 		printf("SSID                : %s\n",pstrConnInfo->acSSID);
@@ -219,6 +225,8 @@ static void wifi_callback(uint8 msg_type, void *msg_data)
 				msg_ip_addr[0], msg_ip_addr[1], msg_ip_addr[2], msg_ip_addr[3]);
 		/* Try to connect to MQTT broker when Wi-Fi was connected. */
 		mqtt_connect(&mqtt_inst, main_mqtt_broker);
+		mqtt_connection_state = CONNECTING;
+		printf("Connecting to MQTT broker...\n\r");
 		m2m_wifi_get_connection_info();
 		break;
 
@@ -258,6 +266,7 @@ static void socket_resolve_handler(uint8_t *doamin_name, uint32_t server_ip)
 	mqtt_socket_resolve_handler(doamin_name, server_ip);
 }
 
+#if(0)
 void SetRTCTime(char *topic, char *msg)
 {
 	int8_t num;
@@ -305,6 +314,7 @@ void SetRTCTime(char *topic, char *msg)
 		rtc_calendar_set_time(&rtc_instance, &time);
 	}
 }
+#endif
 
 /**
  * \brief Callback to get the MQTT status update.
@@ -345,6 +355,7 @@ static void mqtt_callback(struct mqtt_module *module_inst, int type, union mqtt_
 			/* Enable USART receiving callback. */
 			usart_enable_callback(&cdc_uart_module, USART_CALLBACK_BUFFER_RECEIVED);
 			printf("MQTT Connection Accepted.\r\n");
+			mqtt_connection_state = CONNECTED;
 		} else {
 			/* Cannot connect for some reason. */
 			printf("MQTT broker decline your access! error code %d\r\n", data->connected.result);
@@ -360,6 +371,7 @@ static void mqtt_callback(struct mqtt_module *module_inst, int type, union mqtt_
 		/* Stop timer and USART callback. */
 		printf("MQTT disconnected\r\n");
 		usart_disable_callback(&cdc_uart_module, USART_CALLBACK_BUFFER_RECEIVED);
+		mqtt_connection_state = DISCONNECTED;
 		break;
 	}
 }
@@ -414,7 +426,6 @@ static void configure_mqtt(void)
 		while (1);
 	}
 }
-
 
 void configure_extint_channel(void)
 {
@@ -544,6 +555,7 @@ int main(void)
 
 	/* Initialize the MQTT service. */
 	configure_mqtt();
+	mqtt_connection_state = CONNECTING;
 
 	/* Initialize the BSP. */
 	nm_bsp_init();
@@ -559,56 +571,88 @@ int main(void)
 	/* Initialize Wi-Fi driver with data and status callbacks. */
 	param.pfAppWifiCb = wifi_callback; /* Set Wi-Fi event callback. */
 	ret = m2m_wifi_init(&param);
-	if (M2M_SUCCESS != ret) {
+	if (M2M_SUCCESS != ret) 
+	{
 		printf("main: m2m_wifi_init call error!(%d)\r\n", ret);
 		while (1);
 	}
-
 
 	/* Initialize socket interface. */
 	socketInit();
 	registerSocketCallback(socket_event_handler, socket_resolve_handler);
 
-	/*Set power saving mode*/
-	tstrM2mLsnInt strM2mLsnInt;
-	m2m_wifi_set_sleep_mode(M2M_PS_DEEP_AUTOMATIC, 0);
-	strM2mLsnInt.u16LsnInt = M2M_LISTEN_INTERVAL;
-	m2m_wifi_set_lsn_int(&strM2mLsnInt);
+	if (MAIN_PS_SLEEP_MODE == M2M_PS_MANUAL) 
+	{
+		printf("M2M_PS_MANUAL\r\n");
+		m2m_wifi_set_sleep_mode(MAIN_PS_SLEEP_MODE, 1);
+	} 
+	else if (MAIN_PS_SLEEP_MODE == M2M_PS_DEEP_AUTOMATIC) 
+	{
+		printf("M2M_PS_DEEP_AUTOMATIC\r\n");
+		tstrM2mLsnInt strM2mLsnInt;
+		m2m_wifi_set_sleep_mode(M2M_PS_DEEP_AUTOMATIC, 1);
+		strM2mLsnInt.u16LsnInt = M2M_LISTEN_INTERVAL;
+		m2m_wifi_set_lsn_int(&strM2mLsnInt);
+	}
+	
+	system_set_sleepmode(SYSTEM_SLEEPMODE_IDLE_0);
 	
 	/* Connect to router. */
-	m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID),
-			MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
+	m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID), MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
 
-	while (1) {
+	while (1) 
+	{
+		if (MAIN_PS_SLEEP_MODE == M2M_PS_MANUAL)
+			m2m_wifi_request_sleep(1000);
 		/* Handle pending events from network controller. */
 		m2m_wifi_handle_events(NULL);
 		/* Checks the timer timeout. */
 		sw_timer_task(&swt_module_inst);
-		if(new_activity)
+		switch(mqtt_connection_state)
 		{
-			new_activity = 0;
-			rtc_calendar_get_time(&rtc_instance, &my_time);
-			sprintf(ping_msg, "%s @ %d/%d/%d %d:%d:%d", glb_msg, my_time.day, my_time.month, my_time.year, my_time.hour, my_time.minute, my_time.second);
-			printf("Sending: '%s' to %s\n", glb_msg, MAIN_CHAT_TOPIC);
-			mqtt_publish(&mqtt_inst, glb_topic, ping_msg, strlen(ping_msg), 0, 1);
-		}
-		if (rtc_activity)
-		{
-			rtc_activity = 0;
-			/* Do something on RTC alarm match here */
-			rtc_calendar_get_time(&rtc_instance, &my_time);
-			sprintf(ping_msg, "Ping @ %d/%d/%d %d:%d:%d", my_time.month, my_time.day, my_time.year, my_time.hour, my_time.minute, my_time.second);
-			printf("Sending ping message: %s", ping_msg);
-			mqtt_publish(&mqtt_inst, "bs/monitor/ping", ping_msg, strlen(ping_msg), 0, 1);
+			case DISCONNECTED:
+				mqtt_connect(&mqtt_inst, main_mqtt_broker);
+				printf("Connecting to MQTT Broker...\r\n");
+				//TODO: sleep here...
+				mqtt_connection_state = CONNECTING;
+				break;
+				
+			case CONNECTED:
+				if(new_activity)
+				{
+					new_activity = 0;
+					rtc_calendar_get_time(&rtc_instance, &my_time);
+					sprintf(ping_msg, "%s @ %d/%d/%d %d:%d:%d", glb_msg, my_time.day, my_time.month, my_time.year, my_time.hour, my_time.minute, my_time.second);
+					printf("Sending: '%s' to %s\n", glb_msg, MAIN_CHAT_TOPIC);
+					mqtt_publish(&mqtt_inst, glb_topic, ping_msg, strlen(ping_msg), 0, 1);
+				}
+				else if (rtc_activity)
+				{
+					rtc_activity = 0;
+					/* Do something on RTC alarm match here */
+					rtc_calendar_get_time(&rtc_instance, &my_time);
+					sprintf(ping_msg, "Ping @ %d/%d/%d %d:%d:%d", my_time.month, my_time.day, my_time.year, my_time.hour, my_time.minute, my_time.second);
+					printf("Sending ping message: %s", ping_msg);
+					mqtt_publish(&mqtt_inst, "bs/monitor/ping", ping_msg, strlen(ping_msg), 0, 1);
+				}
+				else if(1)
+				{
+					if(mqtt_disconnect(&mqtt_inst, 1) == 0)
+					{
+						printf("Disconnecting from MQTT Broker...\r\n");
+						mqtt_connection_state = DISCONNECTED;	
+					}
+					else
+						printf("Disconnection from broker failed...\r\n");
+					printf("---Going to sleep---\r\n");
+					system_sleep();
+					while((rtc_activity == 0) && (new_activity == 0));
+					printf("Woke up!\n\r");
+				}		
+				break;
+				
+			default:
+				break;		
 		}
 	}
-}
-
-void mqtt_wake_publish_sleep(struct mqtt_module *const module, const char *mqtttopic, const char *mqttmsg, uint32_t msg_len, uint8_t qos, uint8_t retain)
-{
-	
-	m2m_wifi_handle_events(NULL);
-	sw_timer_task(&swt_module_inst);	
-	mqtt_publish(module, mqtttopic, mqttmsg, msg_len, qos, retain);
-	mqtt_disconnect(module, 0);
 }
