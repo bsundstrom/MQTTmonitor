@@ -141,6 +141,7 @@ SUBDIRS :=  \
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
+../src/main21.c \
 ../src/ASF/common2/services/delay/sam0/systick_counter.c \
 ../src/ASF/common/components/wifi/winc1500/bsp/source/nm_bsp_samd21.c \
 ../src/ASF/common/components/wifi/winc1500/bus_wrapper/source/nm_bus_wrapper_samd21.c \
@@ -185,8 +186,7 @@ C_SRCS +=  \
 ../src/ASF/sam0/utils/stdio/write.c \
 ../src/ASF/sam0/utils/syscalls/gcc/syscalls.c \
 ../src/iot/stream_writer.c \
-../src/iot/sw_timer.c \
-../src/main21.c
+../src/iot/sw_timer.c
 
 
 PREPROCESSING_SRCS += 
@@ -196,6 +196,7 @@ ASM_SRCS +=
 
 
 OBJS +=  \
+src/main21.o \
 src/ASF/common2/services/delay/sam0/systick_counter.o \
 src/ASF/common/components/wifi/winc1500/bsp/source/nm_bsp_samd21.o \
 src/ASF/common/components/wifi/winc1500/bus_wrapper/source/nm_bus_wrapper_samd21.o \
@@ -240,10 +241,10 @@ src/ASF/sam0/utils/stdio/read.o \
 src/ASF/sam0/utils/stdio/write.o \
 src/ASF/sam0/utils/syscalls/gcc/syscalls.o \
 src/iot/stream_writer.o \
-src/iot/sw_timer.o \
-src/main21.o
+src/iot/sw_timer.o
 
 OBJS_AS_ARGS +=  \
+src/main21.o \
 src/ASF/common2/services/delay/sam0/systick_counter.o \
 src/ASF/common/components/wifi/winc1500/bsp/source/nm_bsp_samd21.o \
 src/ASF/common/components/wifi/winc1500/bus_wrapper/source/nm_bus_wrapper_samd21.o \
@@ -288,10 +289,10 @@ src/ASF/sam0/utils/stdio/read.o \
 src/ASF/sam0/utils/stdio/write.o \
 src/ASF/sam0/utils/syscalls/gcc/syscalls.o \
 src/iot/stream_writer.o \
-src/iot/sw_timer.o \
-src/main21.o
+src/iot/sw_timer.o
 
 C_DEPS +=  \
+src/main21.d \
 src/ASF/common2/services/delay/sam0/systick_counter.d \
 src/ASF/common/components/wifi/winc1500/bsp/source/nm_bsp_samd21.d \
 src/ASF/common/components/wifi/winc1500/bus_wrapper/source/nm_bus_wrapper_samd21.d \
@@ -336,10 +337,10 @@ src/ASF/sam0/utils/stdio/read.d \
 src/ASF/sam0/utils/stdio/write.d \
 src/ASF/sam0/utils/syscalls/gcc/syscalls.d \
 src/iot/stream_writer.d \
-src/iot/sw_timer.d \
-src/main21.d
+src/iot/sw_timer.d
 
 C_DEPS_AS_ARGS +=  \
+src/main21.d \
 src/ASF/common2/services/delay/sam0/systick_counter.d \
 src/ASF/common/components/wifi/winc1500/bsp/source/nm_bsp_samd21.d \
 src/ASF/common/components/wifi/winc1500/bus_wrapper/source/nm_bus_wrapper_samd21.d \
@@ -384,8 +385,7 @@ src/ASF/sam0/utils/stdio/read.d \
 src/ASF/sam0/utils/stdio/write.d \
 src/ASF/sam0/utils/syscalls/gcc/syscalls.d \
 src/iot/stream_writer.d \
-src/iot/sw_timer.d \
-src/main21.d
+src/iot/sw_timer.d
 
 OUTPUT_FILE_PATH +=MY_MQTT.elf
 
@@ -494,6 +494,13 @@ LINKER_SCRIPT_DEP+=  \
 
 
 
+
+src/%.o: ../src/%.c
+	@echo Building file: $<
+	@echo Invoking: ARM/GNU C Compiler : 4.8.4
+	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAMD21G18A__ -DDEBUG -DBOARD=SAMW25_XPLAINED_PRO -D__SAMD21G18A__ -DEXTINT_CALLBACK_MODE=true -DTCC_ASYNC=true -DARM_MATH_CM0PLUS=true -DSPI_CALLBACK_MODE=true -DUSART_CALLBACK_MODE=true -DSYSTICK_MODE -DAC_CALLBACK_MODE=true -DRTC_CALENDAR_ASYNC=true  -I"../common/components/wifi/winc1500/mqtt_chat_example/samd21g18a_samw25_xplained_pro" -I"../src/iot/mqtt" -I"../src/ASF/sam0/boards/samw25_xplained_pro" -I"../src/ASF/common/components/wifi/winc1500/socket/source" -I"../src/ASF/common/components/wifi/winc1500/bus_wrapper/include" -I"../src/ASF/sam0/drivers/system/pinmux" -I"../src/ASF/common/components/wifi/winc1500/driver/include" -I"../src/ASF/sam0/drivers/system/reset/reset_sam_d_r" -I"../src/ASF/common/boards" -I"../src/ASF/common2/services/delay" -I"../src/ASF/common/components/wifi/winc1500" -I"../src/ASF/sam0/utils" -I"../src/ASF/thirdparty/CMSIS/Lib/GCC" -I"../src/ASF/sam0/drivers/system/reset" -I"../src" -I"../src/ASF/common/components/wifi/winc1500/mqtt_chat_example/samd21g18a_samw25_xplained_pro" -I"../src/ASF/common/components/wifi/winc1500/bus_wrapper" -I"../src/ASF/sam0/utils/preprocessor" -I"../src/ASF/sam0/utils/cmsis/samd21/include" -I"../src/ASF/sam0/drivers/system" -I"../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da" -I"../src/ASF/common/components/wifi/winc1500/socket/include" -I"../src/ASF/sam0/utils/cmsis/samd21/source" -I"../src/ASF/common/components/wifi/winc1500/common/source" -I"../src/ASF/common/components/wifi/winc1500/bsp" -I"../src/ASF/sam0/drivers/system/interrupt" -I"../src/ASF/common/components/wifi/winc1500/driver" -I"../src/ASF/sam0/utils/header_files" -I"../src/ASF/sam0/drivers/system/power/power_sam_d_r" -I"../src/ASF/sam0/drivers/tcc" -I"../src/ASF/common/utils" -I"../src/ASF/sam0/drivers/system/power" -I"../src/ASF/common/components/wifi/winc1500/socket" -I"../src/ASF/common/components/wifi/winc1500/common/include" -I"../src/ASF/common2/services/delay/sam0" -I"../src/ASF/sam0/drivers/sercom/spi" -I"../src/ASF/sam0/drivers/port" -I"../src/ASF/sam0/utils/stdio/stdio_serial" -I"../src/ASF/sam0/drivers/sercom/usart" -I"../src/ASF/sam0/boards" -I"../src/ASF/common/components/wifi/winc1500/bus_wrapper/source" -I"../src/ASF/thirdparty/CMSIS/Include" -I"../src/config" -I"../src/ASF/common/components/wifi/winc1500/driver/source" -I"../src/ASF/common/components/wifi/winc1500/bsp/include" -I"../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21" -I"../src/iot" -I"../src/ASF/sam0/drivers/sercom" -I"../src/ASF/common/components/wifi/winc1500/bsp/source" -I"../src/ASF/common/components/wifi/winc1500/common" -I"../src/ASF/sam0/drivers/extint" -I"../src/ASF/common/services/serial" -I"../src/ASF/sam0/drivers/system/clock" -I"../src/ASF/sam0/drivers/ac" -I"../src/ASF/sam0/drivers/ac/ac_sam_d_r" -I"../src/ASF/sam0/drivers/rtc" -I"../src/ASF/sam0/drivers/rtc/rtc_sam_d_r" -I"../src/ASF/common/services/sleepmgr"  -O1 -fdata-sections -ffunction-sections -mlong-calls -g3 -Wall -mcpu=cortex-m0plus -c -pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
 
 src/ASF/common2/services/delay/sam0/%.o: ../src/ASF/common2/services/delay/sam0/%.c
 	@echo Building file: $<
@@ -685,13 +692,6 @@ src/ASF/sam0/utils/syscalls/gcc/%.o: ../src/ASF/sam0/utils/syscalls/gcc/%.c
 	
 
 src/iot/%.o: ../src/iot/%.c
-	@echo Building file: $<
-	@echo Invoking: ARM/GNU C Compiler : 4.8.4
-	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAMD21G18A__ -DDEBUG -DBOARD=SAMW25_XPLAINED_PRO -D__SAMD21G18A__ -DEXTINT_CALLBACK_MODE=true -DTCC_ASYNC=true -DARM_MATH_CM0PLUS=true -DSPI_CALLBACK_MODE=true -DUSART_CALLBACK_MODE=true -DSYSTICK_MODE -DAC_CALLBACK_MODE=true -DRTC_CALENDAR_ASYNC=true  -I"../common/components/wifi/winc1500/mqtt_chat_example/samd21g18a_samw25_xplained_pro" -I"../src/iot/mqtt" -I"../src/ASF/sam0/boards/samw25_xplained_pro" -I"../src/ASF/common/components/wifi/winc1500/socket/source" -I"../src/ASF/common/components/wifi/winc1500/bus_wrapper/include" -I"../src/ASF/sam0/drivers/system/pinmux" -I"../src/ASF/common/components/wifi/winc1500/driver/include" -I"../src/ASF/sam0/drivers/system/reset/reset_sam_d_r" -I"../src/ASF/common/boards" -I"../src/ASF/common2/services/delay" -I"../src/ASF/common/components/wifi/winc1500" -I"../src/ASF/sam0/utils" -I"../src/ASF/thirdparty/CMSIS/Lib/GCC" -I"../src/ASF/sam0/drivers/system/reset" -I"../src" -I"../src/ASF/common/components/wifi/winc1500/mqtt_chat_example/samd21g18a_samw25_xplained_pro" -I"../src/ASF/common/components/wifi/winc1500/bus_wrapper" -I"../src/ASF/sam0/utils/preprocessor" -I"../src/ASF/sam0/utils/cmsis/samd21/include" -I"../src/ASF/sam0/drivers/system" -I"../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da" -I"../src/ASF/common/components/wifi/winc1500/socket/include" -I"../src/ASF/sam0/utils/cmsis/samd21/source" -I"../src/ASF/common/components/wifi/winc1500/common/source" -I"../src/ASF/common/components/wifi/winc1500/bsp" -I"../src/ASF/sam0/drivers/system/interrupt" -I"../src/ASF/common/components/wifi/winc1500/driver" -I"../src/ASF/sam0/utils/header_files" -I"../src/ASF/sam0/drivers/system/power/power_sam_d_r" -I"../src/ASF/sam0/drivers/tcc" -I"../src/ASF/common/utils" -I"../src/ASF/sam0/drivers/system/power" -I"../src/ASF/common/components/wifi/winc1500/socket" -I"../src/ASF/common/components/wifi/winc1500/common/include" -I"../src/ASF/common2/services/delay/sam0" -I"../src/ASF/sam0/drivers/sercom/spi" -I"../src/ASF/sam0/drivers/port" -I"../src/ASF/sam0/utils/stdio/stdio_serial" -I"../src/ASF/sam0/drivers/sercom/usart" -I"../src/ASF/sam0/boards" -I"../src/ASF/common/components/wifi/winc1500/bus_wrapper/source" -I"../src/ASF/thirdparty/CMSIS/Include" -I"../src/config" -I"../src/ASF/common/components/wifi/winc1500/driver/source" -I"../src/ASF/common/components/wifi/winc1500/bsp/include" -I"../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21" -I"../src/iot" -I"../src/ASF/sam0/drivers/sercom" -I"../src/ASF/common/components/wifi/winc1500/bsp/source" -I"../src/ASF/common/components/wifi/winc1500/common" -I"../src/ASF/sam0/drivers/extint" -I"../src/ASF/common/services/serial" -I"../src/ASF/sam0/drivers/system/clock" -I"../src/ASF/sam0/drivers/ac" -I"../src/ASF/sam0/drivers/ac/ac_sam_d_r" -I"../src/ASF/sam0/drivers/rtc" -I"../src/ASF/sam0/drivers/rtc/rtc_sam_d_r" -I"../src/ASF/common/services/sleepmgr"  -O1 -fdata-sections -ffunction-sections -mlong-calls -g3 -Wall -mcpu=cortex-m0plus -c -pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
-	@echo Finished building: $<
-	
-
-src/%.o: ../src/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 4.8.4
 	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAMD21G18A__ -DDEBUG -DBOARD=SAMW25_XPLAINED_PRO -D__SAMD21G18A__ -DEXTINT_CALLBACK_MODE=true -DTCC_ASYNC=true -DARM_MATH_CM0PLUS=true -DSPI_CALLBACK_MODE=true -DUSART_CALLBACK_MODE=true -DSYSTICK_MODE -DAC_CALLBACK_MODE=true -DRTC_CALENDAR_ASYNC=true  -I"../common/components/wifi/winc1500/mqtt_chat_example/samd21g18a_samw25_xplained_pro" -I"../src/iot/mqtt" -I"../src/ASF/sam0/boards/samw25_xplained_pro" -I"../src/ASF/common/components/wifi/winc1500/socket/source" -I"../src/ASF/common/components/wifi/winc1500/bus_wrapper/include" -I"../src/ASF/sam0/drivers/system/pinmux" -I"../src/ASF/common/components/wifi/winc1500/driver/include" -I"../src/ASF/sam0/drivers/system/reset/reset_sam_d_r" -I"../src/ASF/common/boards" -I"../src/ASF/common2/services/delay" -I"../src/ASF/common/components/wifi/winc1500" -I"../src/ASF/sam0/utils" -I"../src/ASF/thirdparty/CMSIS/Lib/GCC" -I"../src/ASF/sam0/drivers/system/reset" -I"../src" -I"../src/ASF/common/components/wifi/winc1500/mqtt_chat_example/samd21g18a_samw25_xplained_pro" -I"../src/ASF/common/components/wifi/winc1500/bus_wrapper" -I"../src/ASF/sam0/utils/preprocessor" -I"../src/ASF/sam0/utils/cmsis/samd21/include" -I"../src/ASF/sam0/drivers/system" -I"../src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da" -I"../src/ASF/common/components/wifi/winc1500/socket/include" -I"../src/ASF/sam0/utils/cmsis/samd21/source" -I"../src/ASF/common/components/wifi/winc1500/common/source" -I"../src/ASF/common/components/wifi/winc1500/bsp" -I"../src/ASF/sam0/drivers/system/interrupt" -I"../src/ASF/common/components/wifi/winc1500/driver" -I"../src/ASF/sam0/utils/header_files" -I"../src/ASF/sam0/drivers/system/power/power_sam_d_r" -I"../src/ASF/sam0/drivers/tcc" -I"../src/ASF/common/utils" -I"../src/ASF/sam0/drivers/system/power" -I"../src/ASF/common/components/wifi/winc1500/socket" -I"../src/ASF/common/components/wifi/winc1500/common/include" -I"../src/ASF/common2/services/delay/sam0" -I"../src/ASF/sam0/drivers/sercom/spi" -I"../src/ASF/sam0/drivers/port" -I"../src/ASF/sam0/utils/stdio/stdio_serial" -I"../src/ASF/sam0/drivers/sercom/usart" -I"../src/ASF/sam0/boards" -I"../src/ASF/common/components/wifi/winc1500/bus_wrapper/source" -I"../src/ASF/thirdparty/CMSIS/Include" -I"../src/config" -I"../src/ASF/common/components/wifi/winc1500/driver/source" -I"../src/ASF/common/components/wifi/winc1500/bsp/include" -I"../src/ASF/sam0/drivers/system/interrupt/system_interrupt_samd21" -I"../src/iot" -I"../src/ASF/sam0/drivers/sercom" -I"../src/ASF/common/components/wifi/winc1500/bsp/source" -I"../src/ASF/common/components/wifi/winc1500/common" -I"../src/ASF/sam0/drivers/extint" -I"../src/ASF/common/services/serial" -I"../src/ASF/sam0/drivers/system/clock" -I"../src/ASF/sam0/drivers/ac" -I"../src/ASF/sam0/drivers/ac/ac_sam_d_r" -I"../src/ASF/sam0/drivers/rtc" -I"../src/ASF/sam0/drivers/rtc/rtc_sam_d_r" -I"../src/ASF/common/services/sleepmgr"  -O1 -fdata-sections -ffunction-sections -mlong-calls -g3 -Wall -mcpu=cortex-m0plus -c -pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

@@ -141,6 +141,8 @@ src/main21.d src/main21.o: ../src/main21.c ../src/asf.h \
  ../src/ASF/sam0/drivers/tcc/tcc.h \
  ../src/ASF/sam0/drivers/tcc/tcc_callback.h \
  ../src/ASF/sam0/drivers/tcc/tcc.h ../src/main.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\time.h \
+ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\machine\time.h \
  ../src/ASF/common/components/wifi/winc1500/driver/include/m2m_wifi.h \
  ../src/ASF/common/components/wifi/winc1500/common/include/nm_common.h \
  ../src/ASF/common/components/wifi/winc1500/bsp/include/nm_bsp.h \
@@ -448,6 +450,10 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/ASF/sam0/drivers/tcc/tcc.h:
 
 ../src/main.h:
+
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\time.h:
+
+c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\machine\time.h:
 
 ../src/ASF/common/components/wifi/winc1500/driver/include/m2m_wifi.h:
 

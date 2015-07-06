@@ -2,6 +2,8 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+src\main21.c
+
 src\ASF\common2\services\delay\sam0\systick_counter.c
 
 src\ASF\common\components\wifi\winc1500\bsp\source\nm_bsp_samd21.c
@@ -91,6 +93,4 @@ src\ASF\sam0\utils\syscalls\gcc\syscalls.c
 src\iot\stream_writer.c
 
 src\iot\sw_timer.c
-
-src\main21.c
 
