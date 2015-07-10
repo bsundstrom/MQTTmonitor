@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Atmel Studio Solution File, Format Version 11.00
 Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "MY_MQTT", "MY_MQTT\MY_MQTT.cproj", "{08075FBF-83BA-49FC-A196-5239E2F29D15}"
 EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "SAMD21 MQTT Monitor", "SAMD21 MQTT Monitor\SAMD21 MQTT Monitor.cproj", "{11DAE052-E07E-4606-B1C7-AA7C6D9B5A1D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -13,6 +15,10 @@ Global
 		{08075FBF-83BA-49FC-A196-5239E2F29D15}.Debug|ARM.Build.0 = Debug|ARM
 		{08075FBF-83BA-49FC-A196-5239E2F29D15}.Release|ARM.ActiveCfg = Release|ARM
 		{08075FBF-83BA-49FC-A196-5239E2F29D15}.Release|ARM.Build.0 = Release|ARM
+		{11DAE052-E07E-4606-B1C7-AA7C6D9B5A1D}.Debug|ARM.ActiveCfg = Debug|ARM
+		{11DAE052-E07E-4606-B1C7-AA7C6D9B5A1D}.Debug|ARM.Build.0 = Debug|ARM
+		{11DAE052-E07E-4606-B1C7-AA7C6D9B5A1D}.Release|ARM.ActiveCfg = Release|ARM
+		{11DAE052-E07E-4606-B1C7-AA7C6D9B5A1D}.Release|ARM.Build.0 = Release|ARM
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

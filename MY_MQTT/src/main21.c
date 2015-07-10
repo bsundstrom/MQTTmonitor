@@ -102,13 +102,13 @@
 #include "socket/include/socket.h"
 
 #define ENABLE_AUTO_TIME_SETTING
-#define ENABLE_SLEEPING 0
+#define ENABLE_SLEEPING
+#define HEARTBEAT_FREQ_SECS 30
 
 #define MAIN_PS_SLEEP_MODE M2M_PS_DEEP_AUTOMATIC
 
-char glb_topic[256];
-char glb_msg[MAIN_CHAT_BUFFER_SIZE];
-volatile uint8_t new_activity;
+volatile bool report_sw_open;
+volatile bool report_sw_closed;
 volatile uint8_t rtc_activity;
 struct rtc_calendar_alarm_time alarm;
 struct rtc_calendar_time my_time;
@@ -121,9 +121,6 @@ static struct usart_module cdc_uart_module;
 
 /** Instance of Timer module. */
 struct sw_timer_module swt_module_inst;
-
-/** User name of chat. */
-char mqtt_user[64] = "";
 
 /* Instance of MQTT service. */
 static struct mqtt_module mqtt_inst;
@@ -148,6 +145,7 @@ static uint8_t gau8SocketBuffer[MAIN_WIFI_M2M_BUFFER_SIZE];
 /** Wi-Fi status variable. */
 static bool gbConnectedWifi = false;
 volatile bool gb_time_is_set = false;
+bool report_startup = 1;
 
 enum mqtt_connection_states
 {
@@ -213,13 +211,12 @@ static void wifi_callback(uint8 msg_type, void *msg_data)
 			DEBUG_PRINT_STATUS("Wi-Fi connected - Requesting DHCP...");
 			m2m_wifi_request_dhcp_client();
 		} 
-		else if (msg_wifi_state->u8CurrState == M2M_WIFI_DISCONNECTED) 
+		else if(msg_wifi_state->u8CurrState == M2M_WIFI_DISCONNECTED) 
 		{	/* If Wi-Fi is disconnected. */
 			DEBUG_PRINT_STATUS("Wi-Fi disconnected.");
-			m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID),
-					MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
-			/* Disconnect from MQTT broker. */
-			/* Force close the MQTT connection, because cannot send a disconnect message to the broker when network is broken. */
+			m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID),MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
+			/* Disconnect from MQTT broker... 
+			Force close the MQTT connection, because cannot send a disconnect message to the broker when network is broken. */
 			mqtt_disconnect(&mqtt_inst, 1);
 		}
 		break;
@@ -274,7 +271,7 @@ static void mqtt_callback(struct mqtt_module *module_inst, int type, union mqtt_
 		 * Or else retry to connect to broker server.
 		 */
 		if (data->sock_connected.result >= 0) {
-			mqtt_connect_broker(module_inst, 1, NULL, NULL, mqtt_user, NULL, NULL, 0, 0, 0);
+			mqtt_connect_broker(module_inst, 1, NULL, NULL, MQTT_CLIENT_ID, NULL, NULL, 0, 0, 0);
 			DEBUG_PRINT_STATUS("Requesting MQTT connection...");
 		} else {
 			DEBUG_PRINT_ERR("Failed to connect to (%s)! Automatically retrying...", main_mqtt_broker);
@@ -286,14 +283,14 @@ static void mqtt_callback(struct mqtt_module *module_inst, int type, union mqtt_
 	case MQTT_CALLBACK_CONNECTED:
 		if (data->connected.result == MQTT_CONN_RESULT_ACCEPT) {
 			/* Subscribe chat topic. */
-			mqtt_subscribe(module_inst, MAIN_CHAT_TOPIC "#", 0);
+			//mqtt_subscribe(module_inst, MAIN_CHAT_TOPIC "#", 0);
 			/* Enable USART receiving callback. */
-			usart_enable_callback(&cdc_uart_module, USART_CALLBACK_BUFFER_RECEIVED);
+			//usart_enable_callback(&cdc_uart_module, USART_CALLBACK_BUFFER_RECEIVED);
 			DEBUG_PRINT_STATUS("MQTT Connection Accepted.");
 			mqtt_connection_state = CONNECTED;
 		} else {
 			/* Cannot connect for some reason. */
-			DEBUG_PRINT_ERR("MQTT broker decline your access! error code %d", data->connected.result);
+			DEBUG_PRINT_ERR("MQTT broker declined your access! error code %d", data->connected.result);
 		}
 
 		break;
@@ -370,7 +367,7 @@ void configure_extint_channel(void)
 	config_extint_chan.gpio_pin_mux       = BUTTON_0_EIC_MUX;
 	config_extint_chan.gpio_pin_pull      = EXTINT_PULL_UP;
 	config_extint_chan.detection_criteria = EXTINT_DETECT_BOTH;
-	//	config_extint_chan.filter_input_signal = true;
+	config_extint_chan.filter_input_signal = true;
 	extint_chan_set_config(BUTTON_0_EIC_LINE, &config_extint_chan);
 }
 
@@ -378,10 +375,9 @@ void extint_detection_callback(void)
 {
 	bool pin_state = port_pin_get_input_level(BUTTON_0_PIN);
 	if(pin_state)
-		strcpy(glb_msg, "Open");
-	else if(!pin_state)
-		strcpy(glb_msg, "Closed");
-	new_activity = 1;
+		report_sw_open = 1;
+	else
+		report_sw_closed = 1;
 }
 
 void configure_extint_callbacks(void)
@@ -412,7 +408,7 @@ void configure_rtc_callbacks(void)
 
 void rtc_match_callback(void)
 {
-	set_next_rtc_alarm(60);
+	set_next_rtc_alarm(HEARTBEAT_FREQ_SECS);
 	rtc_activity = 1;
 }
 
@@ -433,13 +429,13 @@ void set_next_rtc_alarm(uint32_t num_of_seconds)
 		alarm.time.second += num_of_seconds;
 		alarm.time.second = alarm.time.second % 60;
 	}
-	else if(num_of_seconds < (60 * 60)) //time span is greater than an minute
+	else if(num_of_seconds < (60 * 60)) //time span is greater than an minute, less than an hour
 	{
 		alarm.mask = RTC_CALENDAR_ALARM_MASK_MIN;
 		alarm.time.minute += num_of_seconds / 60;
 		alarm.time.minute = alarm.time.minute % 60;		
 	}
-	else if(num_of_seconds < (3600 * 24)) //time span is greater than an hour
+	else if(num_of_seconds < (3600 * 24)) //time span is greater than an hour, less than a day
 	{
 		alarm.mask = RTC_CALENDAR_ALARM_MASK_HOUR;
 		alarm.time.minute += num_of_seconds / 3600;
@@ -447,7 +443,7 @@ void set_next_rtc_alarm(uint32_t num_of_seconds)
 	}
 	else
 	{
-		printf("FAILURE TO SET ALARM - Value too high!"); //time span can't exceed 23:59:59 hours
+		DEBUG_PRINT_ERR("FAILURE TO SET ALARM - Value too high!"); //time span can't exceed 23:59:59 hours
 		return;
 	}
 	rtc_calendar_set_alarm(&rtc_instance, &alarm, RTC_CALENDAR_ALARM_0);	
@@ -510,8 +506,8 @@ static void TimeServerCallback(SOCKET sock, uint8_t u8Msg, void *pvMsg)
 				 * GMT is the time at Greenwich Meridian.
 				 */
 				struct tm * ptm;
-				printf ("The current local time is: %s", ctime (&rawtime));
-				ptm = gmtime ( &rawtime );
+				printf ("The current GMT time is:\r\n%s", ctime(&rawtime));
+				ptm = localtime ( &rawtime );
 				my_time.hour = ptm->tm_hour;
 				my_time.minute = ptm->tm_min;
 				my_time.second = ptm->tm_sec;
@@ -613,7 +609,6 @@ static void TimeServerWiFiCallback(uint8_t u8MsgType, void *pvMsg)
 	}
 }
 
-
 void GetTimeFromServer(void)
 {
 	tstrWifiInitParam param;
@@ -684,7 +679,7 @@ int main(void)
 {
 	tstrWifiInitParam param;
 	int8_t ret;
-	char ping_msg[64];
+	char msg_payload[64];
 	
 	/* Initialize the board. */
 	system_init();
@@ -716,7 +711,6 @@ int main(void)
 	configure_rtc_calendar();
 	configure_rtc_callbacks();
 	rtc_calendar_set_time(&rtc_instance, &my_time);
-	rtc_calendar_swap_time_mode(&rtc_instance);
 	set_next_rtc_alarm(60);
 	
 	configure_extint_channel();
@@ -728,11 +722,6 @@ int main(void)
 	/* Initialize the MQTT service. */
 	configure_mqtt();
 	mqtt_connection_state = CONNECTING;
-
-	/* Setup user name first */
-	strcpy(mqtt_user, "reed_switch");
-	sprintf(glb_topic, "%s%s", MAIN_CHAT_TOPIC, mqtt_user);
-	DEBUG_PRINT_STATUS("Publishing to topic: %s", glb_topic);
 
 	/* Initialize Wi-Fi parameters structure. */
 	memset((uint8_t *)&param, 0, sizeof(tstrWifiInitParam));
@@ -784,38 +773,53 @@ int main(void)
 				break;
 				
 			case CONNECTED:
-				if(new_activity)
+				if(report_sw_open)
 				{
-					new_activity = 0;
+					report_sw_open = 0;
 					rtc_calendar_get_time(&rtc_instance, &my_time);
-					sprintf(ping_msg, "%s @ %d/%d/%d %d:%d:%d", glb_msg, my_time.day, my_time.month, my_time.year, my_time.hour, my_time.minute, my_time.second);
-					DEBUG_PRINT_STATUS("Sending: '%s' to %s", glb_msg, MAIN_CHAT_TOPIC);
-					mqtt_publish(&mqtt_inst, glb_topic, ping_msg, strlen(ping_msg), 0, 1);
+					sprintf(msg_payload, "Open @ %.2d/%.2d/%d %d:%.2d:%.2dGMT", my_time.day, my_time.month, my_time.year, my_time.hour, my_time.minute, my_time.second);
+					DEBUG_PRINT_STATUS("Sending via MQTT: '%s' to %s", msg_payload, MQTT_TOPIC_SW0_LAST_OPENED);
+					mqtt_publish(&mqtt_inst, MQTT_TOPIC_SW0_LAST_OPENED, msg_payload, strlen(msg_payload), 0, 1);
+				}
+				else if(report_sw_closed)
+				{
+					report_sw_closed = 0;
+					rtc_calendar_get_time(&rtc_instance, &my_time);
+					sprintf(msg_payload, "Closed @ %.2d/%.2d/%d %d:%.2d:%.2dGMT", my_time.day, my_time.month, my_time.year, my_time.hour, my_time.minute, my_time.second);
+					DEBUG_PRINT_STATUS("Sending via MQTT: '%s' to %s", msg_payload, MQTT_TOPIC_SW0_LAST_CLOSED);
+					mqtt_publish(&mqtt_inst, MQTT_TOPIC_SW0_LAST_CLOSED, msg_payload, strlen(msg_payload), 0, 1);
 				}
 				else if (rtc_activity)
 				{
 					rtc_activity = 0;
 					rtc_calendar_get_time(&rtc_instance, &my_time);
-					sprintf(ping_msg, "Ping @ %d/%d/%d %d:%d:%d", my_time.month, my_time.day, my_time.year, my_time.hour, my_time.minute, my_time.second);
-					DEBUG_PRINT_STATUS("Sending ping message: %s", ping_msg);
-					mqtt_publish(&mqtt_inst, "bs/monitor/ping", ping_msg, strlen(ping_msg), 0, 1);
+					sprintf(msg_payload, "Ping @ %.2d/%.2d/%d %d:%.2d:%.2dGMT", my_time.month, my_time.day, my_time.year, my_time.hour, my_time.minute, my_time.second);
+					DEBUG_PRINT_STATUS("Sending via MQTT: %s", msg_payload);
+					mqtt_publish(&mqtt_inst, MQTT_TOPIC_HEARTBEAT, msg_payload, strlen(msg_payload), 0, 1);
 				}
-				else if(ENABLE_SLEEPING)
+				else if (report_startup)
 				{
-					if(mqtt_disconnect(&mqtt_inst, 1) == 0)
-					{
-						DEBUG_PRINT_STATUS("Disconnecting from MQTT Broker...");
-						mqtt_connection_state = DISCONNECTED;	
-					}
-					else
-						DEBUG_PRINT_ERR("Disconnection from broker failed.");
-					DEBUG_PRINT_STATUS("---Waiting for activity...");
-					if (MAIN_PS_SLEEP_MODE == M2M_PS_MANUAL)
-						m2m_wifi_request_sleep(1000);
-					system_sleep();
-					while((rtc_activity == 0) && (new_activity == 0));
-					DEBUG_PRINT_STATUS("Activity detected!");
-				}	
+					report_startup = 0;
+					rtc_calendar_get_time(&rtc_instance, &my_time);
+					sprintf(msg_payload, "Start-up @ %.2d/%.2d/%d %d:%.2d:%.2dGMT", my_time.month, my_time.day, my_time.year, my_time.hour, my_time.minute, my_time.second);
+					DEBUG_PRINT_STATUS("Sending via MQTT: %s", msg_payload);
+					mqtt_publish(&mqtt_inst, MQTT_TOPIC_STARTUP_TIME, msg_payload, strlen(msg_payload), 0, 1);					
+				}
+#ifdef ENABLE_SLEEPING
+				if(mqtt_disconnect(&mqtt_inst, 1) == 0)
+				{
+					DEBUG_PRINT_STATUS("Disconnecting from MQTT Broker...");
+					mqtt_connection_state = DISCONNECTED;	
+				}
+				else
+					DEBUG_PRINT_ERR("Disconnection from broker failed.");
+				DEBUG_PRINT_STATUS("---Waiting for activity...");
+				if (MAIN_PS_SLEEP_MODE == M2M_PS_MANUAL)
+					m2m_wifi_request_sleep(1000);
+				system_sleep();
+				while((rtc_activity == 0) && (report_sw_open == 0) && (report_sw_closed == 0));
+				DEBUG_PRINT_STATUS("Activity detected!");
+#endif //ENABLE_SLEEPING
 				break;
 				
 			default:

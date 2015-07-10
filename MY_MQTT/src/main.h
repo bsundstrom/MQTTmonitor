@@ -63,7 +63,11 @@ extern "C" {
 #define MAIN_CHAT_USER_NAME_SIZE 64
 
 /* Chat MQTT topic. */
-#define MAIN_CHAT_TOPIC "bs/monitor/"
+#define MQTT_CLIENT_ID "SAMW25"
+#define MQTT_TOPIC_STARTUP_TIME "bs/monitor/startup_time"
+#define MQTT_TOPIC_SW0_LAST_OPENED "bs/monitor/sw0/lastopened"
+#define MQTT_TOPIC_SW0_LAST_CLOSED "bs/monitor/sw0/lastclosed"
+#define MQTT_TOPIC_HEARTBEAT "bs/monitor/heartbeat"
 
 /*
  * A MQTT broker server which was connected.
