@@ -50,14 +50,14 @@
 #include "socket/include/socket.h"
 
 #define ENABLE_AUTO_TIME_SETTING
-#define ENABLE_SLEEPING
-#define HEARTBEAT_FREQ_SECS (60 * 60)
+//#define ENABLE_SLEEPING
+#define HEARTBEAT_FREQ_SECS (60 * 10)
 
 #define MAIN_PS_SLEEP_MODE M2M_PS_DEEP_AUTOMATIC
 
 volatile bool report_sw_open;
 volatile bool report_sw_closed;
-volatile uint8_t rtc_activity;
+volatile uint8_t glb_rtc_activity;
 struct rtc_calendar_alarm_time alarm;
 struct rtc_calendar_time my_time;
 
@@ -93,7 +93,12 @@ static uint8_t gau8SocketBuffer[MAIN_WIFI_M2M_BUFFER_SIZE];
 /** Wi-Fi status variable. */
 static bool gbConnectedWifi = false;
 volatile bool gb_time_is_set = false;
-bool report_startup = 1;
+bool glb_report_startup = 1;
+volatile bool glb_service_1s_flag = 0;
+volatile uint16_t glb_close_debounce_tmr;
+volatile uint16_t glb_open_debounce_tmr;
+
+struct tc_module tc_instance;
 
 enum mqtt_connection_states
 {
@@ -322,10 +327,16 @@ void configure_extint_channel(void)
 void extint_detection_callback(void)
 {
 	bool pin_state = port_pin_get_input_level(BUTTON_0_PIN);
-	if(pin_state)
-		report_sw_open = 1;
-	else
+	if(pin_state && !glb_open_debounce_tmr)
+	{
+		report_sw_open = 1;	
+		glb_open_debounce_tmr = 5; //500ms debounce timer
+	}
+	else if(!glb_close_debounce_tmr)
+	{
 		report_sw_closed = 1;
+		glb_close_debounce_tmr = 5; //500ms debounce timer
+	}
 }
 
 void configure_extint_callbacks(void)
@@ -357,7 +368,7 @@ void configure_rtc_callbacks(void)
 void rtc_match_callback(void)
 {
 	set_next_rtc_alarm(HEARTBEAT_FREQ_SECS);
-	rtc_activity = 1;
+	glb_rtc_activity = 1;
 }
 
 void set_next_rtc_alarm(uint32_t num_of_seconds)
@@ -524,14 +535,15 @@ static void TimeServerWiFiCallback(uint8_t u8MsgType, void *pvMsg)
 	case M2M_WIFI_RESP_CON_STATE_CHANGED:
 	{
 		tstrM2mWifiStateChanged *pstrWifiState = (tstrM2mWifiStateChanged *)pvMsg;
-		if (pstrWifiState->u8CurrState == M2M_WIFI_CONNECTED) {
+		if (pstrWifiState->u8CurrState == M2M_WIFI_CONNECTED) 
+		{
 			printf("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: CONNECTED\r\n");
 			m2m_wifi_request_dhcp_client();
-		} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) {
-			printf("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED\r\n");
+		} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) 
+		{
 			gbConnectedWifi = false;
-			m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID),
-					MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
+			printf("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED\r\n");
+			m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID), MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
 		}
 
 		break;
@@ -541,8 +553,7 @@ static void TimeServerWiFiCallback(uint8_t u8MsgType, void *pvMsg)
 	{
 		uint8_t *pu8IPAddress = (uint8_t *)pvMsg;
 		/* Turn LED0 on to declare that IP address received. */
-		printf("wifi_cb: M2M_WIFI_REQ_DHCP_CONF: IP is %u.%u.%u.%u\r\n",
-				pu8IPAddress[0], pu8IPAddress[1], pu8IPAddress[2], pu8IPAddress[3]);
+		printf("wifi_cb: M2M_WIFI_REQ_DHCP_CONF: IP is %u.%u.%u.%u\r\n", pu8IPAddress[0], pu8IPAddress[1], pu8IPAddress[2], pu8IPAddress[3]);
 		gbConnectedWifi = true;
 
 		/* Obtain the IP Address by network name */
@@ -625,22 +636,64 @@ void GetTimeFromServer(void)
 
 char* GenerateTimeStamp(void)
 {
-	char timestamp[30];
+	static char timestamp[30];
 	rtc_calendar_get_time(&rtc_instance, &my_time);
 	sprintf(timestamp, "%.2d/%.2d/%d %d:%.2d:%.2d GMT", my_time.month, my_time.day, my_time.year, my_time.hour, my_time.minute, my_time.second);
 	return timestamp;	
 }
 
+void Service_1s(void)
+{
+	glb_service_1s_flag = 0;
+	/*Place code to be serviced every 1 second here:*/
+	
+}
+
+/*Callback should be fired every 100ms*/
+void tc_callback(struct tc_module *const module_inst)
+{
+	static uint_fast8_t tmr_cntr_1s = 0;
+	if(tmr_cntr_1s > 9)
+	{
+		tmr_cntr_1s = 0;
+		glb_service_1s_flag = 1;
+	}
+	else
+		tmr_cntr_1s++;
+		
+	if(glb_open_debounce_tmr)	
+		glb_open_debounce_tmr--;
+	if(glb_close_debounce_tmr)
+		glb_close_debounce_tmr--;
+}
+
+void configure_tc(void)
+{
+	struct tc_config config_tc;
+	tc_get_config_defaults(&config_tc);
+	config_tc.counter_size = TC_COUNTER_SIZE_16BIT;
+	config_tc.clock_source = GCLK_GENERATOR_1;
+	config_tc.clock_prescaler = TC_CLOCK_PRESCALER_DIV16;
+	config_tc.counter_8_bit.period = 205;
+
+	tc_init(&tc_instance, CONF_TC_MODULE, &config_tc);
+
+	tc_enable(&tc_instance);
+}
+
+void configure_tc_callbacks(void)
+{
+	tc_register_callback(&tc_instance, tc_callback,TC_CALLBACK_OVERFLOW);
+	tc_enable_callback(&tc_instance, TC_CALLBACK_OVERFLOW);
+}
 int main(void)
 {
 	tstrWifiInitParam param;
 	int8_t ret;
 	char msg_payload[64];
 	
-	/* Initialize the board. */
 	system_init();
 
-	/* Initialize the UART console. */
 	configure_console();
 	DEBUG_PRINT_STATUS("***Application Starting***");
 	DEBUG_PRINT_STATUS("Compiled on "__DATE__ " @ "__TIME__);
@@ -720,6 +773,7 @@ int main(void)
 		m2m_wifi_handle_events(NULL);
 		/* Checks the timer timeout. */
 		sw_timer_task(&swt_module_inst);
+		Service_1s(); //check if we need to service 1s stuff, service if needed.
 		switch(mqtt_connection_state)
 		{
 			case DISCONNECTED:
@@ -743,17 +797,17 @@ int main(void)
 					DEBUG_PRINT_STATUS("Sending via MQTT: '%s' to %s", msg_payload, MQTT_TOPIC_SW0_LAST_CLOSED);
 					mqtt_publish(&mqtt_inst, MQTT_TOPIC_SW0_LAST_CLOSED, msg_payload, strlen(msg_payload), 0, 1);
 				}
-				else if (rtc_activity)
+				else if (glb_rtc_activity)
 				{
-					rtc_activity = 0;
+					glb_rtc_activity = 0;
 					rtc_calendar_get_time(&rtc_instance, &my_time);
 					sprintf(msg_payload, "Ping @ %s", GenerateTimeStamp());
 					DEBUG_PRINT_STATUS("Sending via MQTT: %s", msg_payload);
 					mqtt_publish(&mqtt_inst, MQTT_TOPIC_HEARTBEAT, msg_payload, strlen(msg_payload), 0, 1);
 				}
-				else if (report_startup)
+				else if (glb_report_startup)
 				{
-					report_startup = 0;
+					glb_report_startup = 0;
 					sprintf(msg_payload, "Start-up @ %s", GenerateTimeStamp());
 					DEBUG_PRINT_STATUS("Sending via MQTT: %s", msg_payload);
 					mqtt_publish(&mqtt_inst, MQTT_TOPIC_STARTUP_TIME, msg_payload, strlen(msg_payload), 0, 1);					
@@ -770,7 +824,7 @@ int main(void)
 				if (MAIN_PS_SLEEP_MODE == M2M_PS_MANUAL)
 					m2m_wifi_request_sleep(1000);
 				system_sleep();
-				while((rtc_activity == 0) && (report_sw_open == 0) && (report_sw_closed == 0));
+				while((glb_rtc_activity == 0) && (report_sw_open == 0) && (report_sw_closed == 0));
 				DEBUG_PRINT_STATUS("Activity detected!");
 #endif //ENABLE_SLEEPING
 				break;

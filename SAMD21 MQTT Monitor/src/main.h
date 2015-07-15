@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <time.h>
+#include "my_id.h"
 
 #define DEBUG_PRINT_ERR(...) do{printf("!!"); printf(__VA_ARGS__); printf(" @ line [%d] in function [%s]>\r\n",__LINE__,__FUNCTION__);}while(0)
 #define DEBUG_PRINT_STATUS(...) do{printf(">>"); printf(__VA_ARGS__); printf("\r\n");}while(0)
@@ -20,11 +21,12 @@ extern "C" {
 #define MAIN_CHAT_USER_NAME_SIZE 64
 
 /* Chat MQTT topic. */
-#define MQTT_CLIENT_ID "SAMW25"
-#define MQTT_TOPIC_STARTUP_TIME "bs/monitor/startup_time"
-#define MQTT_TOPIC_SW0_LAST_OPENED "bs/monitor/sw0/lastopened"
-#define MQTT_TOPIC_SW0_LAST_CLOSED "bs/monitor/sw0/lastclosed"
-#define MQTT_TOPIC_HEARTBEAT "bs/monitor/heartbeat"
+#define MQTT_TOPIC_STARTUP_TIME MQTT_CLIENT_ID "startup_time"
+#define MQTT_TOPIC_SW0_LAST_OPENED MQTT_CLIENT_ID "lastopened"
+#define MQTT_TOPIC_SW0_LAST_CLOSED MQTT_CLIENT_ID "lastclosed"
+#define MQTT_TOPIC_HEARTBEAT MQTT_CLIENT_ID "heartbeat"
+
+#define CONF_TC_MODULE TC3
 
 /*
  * A MQTT broker server which was connected.
@@ -58,6 +60,10 @@ void configure_rtc_callbacks(void);
 void rtc_match_callback(void);
 void GetTimeFromServer(void);
 char* GenerateTimeStamp(void);
+void configure_tc(void);
+void tc_callback(struct tc_module *const module_inst);
+void Service_1s(void);
+void configure_tc_callbacks(void);
 
 #ifdef __cplusplus
 }

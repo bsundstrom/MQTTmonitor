@@ -117,6 +117,10 @@
 // From module: Standard serial I/O (stdio)
 #include <stdio_serial.h>
 
+// From module: TC - Timer Counter (Callback APIs)
+#include <tc.h>
+#include <tc_interrupt.h>
+
 // From module: TCC - Timer Counter for Control Applications (Callback APIs)
 #include <tcc.h>
 #include <tcc_callback.h>

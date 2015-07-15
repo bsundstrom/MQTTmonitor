@@ -8,6 +8,10 @@ src\ASF\sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar.c
 
 src\ASF\sam0\drivers\rtc\rtc_sam_d_r\rtc_calendar_interrupt.c
 
+src\ASF\sam0\drivers\tc\tc_interrupt.c
+
+src\ASF\sam0\drivers\tc\tc_sam_d_r\tc.c
+
 src\main21.c
 
 src\ASF\common2\services\delay\sam0\systick_counter.c
