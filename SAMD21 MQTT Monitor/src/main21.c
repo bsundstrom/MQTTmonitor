@@ -97,6 +97,7 @@ bool glb_report_startup = 1;
 volatile bool glb_service_1s_flag = 0;
 volatile uint16_t glb_close_debounce_tmr;
 volatile uint16_t glb_open_debounce_tmr;
+volatile uint16_t glb_mqtt_timeout;
 
 struct tc_module tc_instance;
 
@@ -247,6 +248,10 @@ static void mqtt_callback(struct mqtt_module *module_inst, int type, union mqtt_
 		}
 
 		break;
+		
+	case MQTT_CALLBACK_PUBLISHED:
+		glb_mqtt_timeout = 0;
+		break;
 
 	case MQTT_CALLBACK_RECV_PUBLISH:
 		//Hook for receiving subscriptions
@@ -327,15 +332,13 @@ void configure_extint_channel(void)
 void extint_detection_callback(void)
 {
 	bool pin_state = port_pin_get_input_level(BUTTON_0_PIN);
-	if(pin_state && !glb_open_debounce_tmr)
+	if(pin_state)
 	{
-		report_sw_open = 1;	
-		glb_open_debounce_tmr = 5; //500ms debounce timer
+		glb_open_debounce_tmr = 3; //300ms debounce timer
 	}
-	else if(!glb_close_debounce_tmr)
+	else
 	{
-		report_sw_closed = 1;
-		glb_close_debounce_tmr = 5; //500ms debounce timer
+		glb_close_debounce_tmr = 3; //300ms debounce timer
 	}
 }
 
@@ -642,16 +645,21 @@ char* GenerateTimeStamp(void)
 	return timestamp;	
 }
 
-void Service_1s(void)
+/*Service_1s is called from the main thread every 1 second.*/
+/*This is a general purpose function to be used for anything that requires periodic service at 1s intervals*/
+inline void Service_1s(void)
 {
-	glb_service_1s_flag = 0;
-	/*Place code to be serviced every 1 second here:*/
-	
+	if(glb_service_1s_flag)
+	{
+		glb_service_1s_flag = 0;
+		/*Place code to be serviced every 1 second here:*/		
+	}	
 }
 
 /*Callback should be fired every 100ms*/
 void tc_callback(struct tc_module *const module_inst)
 {
+	bool pin_state;
 	static uint_fast8_t tmr_cntr_1s = 0;
 	if(tmr_cntr_1s > 9)
 	{
@@ -661,17 +669,39 @@ void tc_callback(struct tc_module *const module_inst)
 	else
 		tmr_cntr_1s++;
 		
-	if(glb_open_debounce_tmr)	
-		glb_open_debounce_tmr--;
+	if(glb_mqtt_timeout--) //test, then decrement the counter
+	{	//if counter is now zero, that means we just timed out.
+		if(glb_mqtt_timeout == 0) //we didn't successfully publish the message... reset the system!
+			system_reset();
+	}
+		
+	if(glb_open_debounce_tmr)
+	{	
+		pin_state = port_pin_get_input_level(BUTTON_0_PIN);
+		if(pin_state)
+		{
+			glb_open_debounce_tmr--;
+			if(glb_open_debounce_tmr == 0)
+				report_sw_open = 1;
+		}
+	}
 	if(glb_close_debounce_tmr)
-		glb_close_debounce_tmr--;
+	{
+		pin_state = port_pin_get_input_level(BUTTON_0_PIN);
+		if(!pin_state)
+		{
+			glb_close_debounce_tmr--;
+			if(glb_close_debounce_tmr == 0)
+				report_sw_closed = 1;		
+		}
+	}
 }
 
 void configure_tc(void)
 {
 	struct tc_config config_tc;
 	tc_get_config_defaults(&config_tc);
-	config_tc.counter_size = TC_COUNTER_SIZE_16BIT;
+	config_tc.counter_size = TC_COUNTER_SIZE_8BIT;
 	config_tc.clock_source = GCLK_GENERATOR_1;
 	config_tc.clock_prescaler = TC_CLOCK_PRESCALER_DIV16;
 	config_tc.counter_8_bit.period = 205;
@@ -686,11 +716,30 @@ void configure_tc_callbacks(void)
 	tc_register_callback(&tc_instance, tc_callback,TC_CALLBACK_OVERFLOW);
 	tc_enable_callback(&tc_instance, TC_CALLBACK_OVERFLOW);
 }
+
+
+int my_mqtt_publish	(	struct mqtt_module *const 	module,
+const char * 	topic,
+const char * 	msg,
+uint32_t 	msg_len,
+uint8_t 	qos,
+uint8_t 	retain
+)
+{
+	int ret_val;
+	glb_mqtt_timeout = 100; //give us 10 seconds to publish the message
+	ret_val = mqtt_publish(module, topic, msg, msg_len, qos, retain);
+	if(ret_val)
+		DEBUG_PRINT_ERR("ERROR - mqtt_publish() returned %d", ret_val);
+	return ret_val;
+}
+
 int main(void)
 {
 	tstrWifiInitParam param;
 	int8_t ret;
 	char msg_payload[64];
+	int ping_cnt = 0;
 	
 	system_init();
 
@@ -724,7 +773,10 @@ int main(void)
 	
 	configure_extint_channel();
 	configure_extint_callbacks();
-
+	
+	configure_tc();
+	configure_tc_callbacks();
+	
 	/* Initialize the Timer. */
 	configure_timer();
 
@@ -788,29 +840,29 @@ int main(void)
 					report_sw_open = 0;
 					sprintf(msg_payload, "Opened @ %s", GenerateTimeStamp());					
 					DEBUG_PRINT_STATUS("Sending via MQTT: '%s' to %s", msg_payload, MQTT_TOPIC_SW0_LAST_OPENED);
-					mqtt_publish(&mqtt_inst, MQTT_TOPIC_SW0_LAST_OPENED, msg_payload, strlen(msg_payload), 0, 1);
+					my_mqtt_publish(&mqtt_inst, MQTT_TOPIC_SW0_LAST_OPENED, msg_payload, strlen(msg_payload), 0, 1);
 				}
 				else if(report_sw_closed)
 				{
 					report_sw_closed = 0;
 					sprintf(msg_payload, "Closed @ %s", GenerateTimeStamp());	
 					DEBUG_PRINT_STATUS("Sending via MQTT: '%s' to %s", msg_payload, MQTT_TOPIC_SW0_LAST_CLOSED);
-					mqtt_publish(&mqtt_inst, MQTT_TOPIC_SW0_LAST_CLOSED, msg_payload, strlen(msg_payload), 0, 1);
+					my_mqtt_publish(&mqtt_inst, MQTT_TOPIC_SW0_LAST_CLOSED, msg_payload, strlen(msg_payload), 0, 1);
 				}
 				else if (glb_rtc_activity)
 				{
 					glb_rtc_activity = 0;
 					rtc_calendar_get_time(&rtc_instance, &my_time);
-					sprintf(msg_payload, "Ping @ %s", GenerateTimeStamp());
+					sprintf(msg_payload, "Ping %d @ %s",(int)ping_cnt++,  GenerateTimeStamp());
 					DEBUG_PRINT_STATUS("Sending via MQTT: %s", msg_payload);
-					mqtt_publish(&mqtt_inst, MQTT_TOPIC_HEARTBEAT, msg_payload, strlen(msg_payload), 0, 1);
+					my_mqtt_publish(&mqtt_inst, MQTT_TOPIC_HEARTBEAT, msg_payload, strlen(msg_payload), 0, 1);
 				}
 				else if (glb_report_startup)
 				{
 					glb_report_startup = 0;
 					sprintf(msg_payload, "Start-up @ %s", GenerateTimeStamp());
 					DEBUG_PRINT_STATUS("Sending via MQTT: %s", msg_payload);
-					mqtt_publish(&mqtt_inst, MQTT_TOPIC_STARTUP_TIME, msg_payload, strlen(msg_payload), 0, 1);					
+					my_mqtt_publish(&mqtt_inst, MQTT_TOPIC_STARTUP_TIME, msg_payload, strlen(msg_payload), 0, 1);					
 				}
 #ifdef ENABLE_SLEEPING
 				if(mqtt_disconnect(&mqtt_inst, 1) == 0)

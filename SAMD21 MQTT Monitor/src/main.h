@@ -22,8 +22,8 @@ extern "C" {
 
 /* Chat MQTT topic. */
 #define MQTT_TOPIC_STARTUP_TIME MQTT_CLIENT_ID "startup_time"
-#define MQTT_TOPIC_SW0_LAST_OPENED MQTT_CLIENT_ID "lastopened"
-#define MQTT_TOPIC_SW0_LAST_CLOSED MQTT_CLIENT_ID "lastclosed"
+#define MQTT_TOPIC_SW0_LAST_OPENED MQTT_CLIENT_ID "last_opened"
+#define MQTT_TOPIC_SW0_LAST_CLOSED MQTT_CLIENT_ID "last_closed"
 #define MQTT_TOPIC_HEARTBEAT MQTT_CLIENT_ID "heartbeat"
 
 #define CONF_TC_MODULE TC3

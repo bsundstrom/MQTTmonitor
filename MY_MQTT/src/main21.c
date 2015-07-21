@@ -1,46 +1,46 @@
 /**
- *
- * \file
- *
- * \brief WINC1500 MQTT chat example.
- *
- * Copyright (c) 2015 Atmel Corporation. All rights reserved.
- *
- * \asf_license_start
- *
- * \page License
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * 3. The name of Atmel may not be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an
- *    Atmel microcontroller product.
- *
- * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
- * EXPRESSLY AND SPECIFICALLY DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- * \asf_license_stop
- *
- */
+*
+* \file
+*
+* \brief WINC1500 MQTT chat example.
+*
+* Copyright (c) 2015 Atmel Corporation. All rights reserved.
+*
+* \asf_license_start
+*
+* \page License
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+* 1. Redistributions of source code must retain the above copyright notice,
+*    this list of conditions and the following disclaimer.
+*
+* 2. Redistributions in binary form must reproduce the above copyright notice,
+*    this list of conditions and the following disclaimer in the documentation
+*    and/or other materials provided with the distribution.
+*
+* 3. The name of Atmel may not be used to endorse or promote products derived
+*    from this software without specific prior written permission.
+*
+* 4. This software may only be redistributed and used in connection with an
+*    Atmel microcontroller product.
+*
+* THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
+* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+* EXPRESSLY AND SPECIFICALLY DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR
+* ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+* OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+* ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE.
+*
+* \asf_license_stop
+*
+*/
 
 #include "asf.h"
 #include "main.h"
@@ -117,38 +117,38 @@ static void uart_callback(const struct usart_module *const module)
 }
 
 /**
- * \brief Callback to get the Wi-Fi status update.
- *
- * \param[in] msg_type type of Wi-Fi notification. Possible types are:
- *  - [M2M_WIFI_RESP_CURRENT_RSSI](@ref M2M_WIFI_RESP_CURRENT_RSSI)
- *  - [M2M_WIFI_RESP_CON_STATE_CHANGED](@ref M2M_WIFI_RESP_CON_STATE_CHANGED)
- *  - [M2M_WIFI_RESP_CONNTION_STATE](@ref M2M_WIFI_RESP_CONNTION_STATE)
- *  - [M2M_WIFI_RESP_SCAN_DONE](@ref M2M_WIFI_RESP_SCAN_DONE)
- *  - [M2M_WIFI_RESP_SCAN_RESULT](@ref M2M_WIFI_RESP_SCAN_RESULT)
- *  - [M2M_WIFI_REQ_WPS](@ref M2M_WIFI_REQ_WPS)
- *  - [M2M_WIFI_RESP_IP_CONFIGURED](@ref M2M_WIFI_RESP_IP_CONFIGURED)
- *  - [M2M_WIFI_RESP_IP_CONFLICT](@ref M2M_WIFI_RESP_IP_CONFLICT)
- *  - [M2M_WIFI_RESP_P2P](@ref M2M_WIFI_RESP_P2P)
- *  - [M2M_WIFI_RESP_AP](@ref M2M_WIFI_RESP_AP)
- *  - [M2M_WIFI_RESP_CLIENT_INFO](@ref M2M_WIFI_RESP_CLIENT_INFO)
- * \param[in] pvMsg A pointer to a buffer containing the notification parameters
- * (if any). It should be casted to the correct data type corresponding to the
- * notification type. Existing types are:
- *  - tstrM2mWifiStateChanged
- *  - tstrM2MWPSInfo
- *  - tstrM2MP2pResp
- *  - tstrM2MAPResp
- *  - tstrM2mScanDone
- *  - tstrM2mWifiscanResult
- */
+* \brief Callback to get the Wi-Fi status update.
+*
+* \param[in] msg_type type of Wi-Fi notification. Possible types are:
+*  - [M2M_WIFI_RESP_CURRENT_RSSI](@ref M2M_WIFI_RESP_CURRENT_RSSI)
+*  - [M2M_WIFI_RESP_CON_STATE_CHANGED](@ref M2M_WIFI_RESP_CON_STATE_CHANGED)
+*  - [M2M_WIFI_RESP_CONNTION_STATE](@ref M2M_WIFI_RESP_CONNTION_STATE)
+*  - [M2M_WIFI_RESP_SCAN_DONE](@ref M2M_WIFI_RESP_SCAN_DONE)
+*  - [M2M_WIFI_RESP_SCAN_RESULT](@ref M2M_WIFI_RESP_SCAN_RESULT)
+*  - [M2M_WIFI_REQ_WPS](@ref M2M_WIFI_REQ_WPS)
+*  - [M2M_WIFI_RESP_IP_CONFIGURED](@ref M2M_WIFI_RESP_IP_CONFIGURED)
+*  - [M2M_WIFI_RESP_IP_CONFLICT](@ref M2M_WIFI_RESP_IP_CONFLICT)
+*  - [M2M_WIFI_RESP_P2P](@ref M2M_WIFI_RESP_P2P)
+*  - [M2M_WIFI_RESP_AP](@ref M2M_WIFI_RESP_AP)
+*  - [M2M_WIFI_RESP_CLIENT_INFO](@ref M2M_WIFI_RESP_CLIENT_INFO)
+* \param[in] pvMsg A pointer to a buffer containing the notification parameters
+* (if any). It should be casted to the correct data type corresponding to the
+* notification type. Existing types are:
+*  - tstrM2mWifiStateChanged
+*  - tstrM2MWPSInfo
+*  - tstrM2MP2pResp
+*  - tstrM2MAPResp
+*  - tstrM2mScanDone
+*  - tstrM2mWifiscanResult
+*/
 static void wifi_callback(uint8 msg_type, void *msg_data)
 {
 	tstrM2mWifiStateChanged *msg_wifi_state;
 	tstrM2MConnInfo     *pstrConnInfo = (tstrM2MConnInfo*)msg_data;
 
-	switch (msg_type) 
-	{	
-	case M2M_WIFI_RESP_CONN_INFO:
+	switch (msg_type)
+	{
+		case M2M_WIFI_RESP_CONN_INFO:
 		printf("CONNECTED AP INFO\n");
 		printf("SSID                : %s\n",pstrConnInfo->acSSID);
 		printf("SEC TYPE            : %d\n",pstrConnInfo->u8SecType);
@@ -157,24 +157,24 @@ static void wifi_callback(uint8 msg_type, void *msg_data)
 		pstrConnInfo->au8IPAddr[0] , pstrConnInfo->au8IPAddr[1], pstrConnInfo->au8IPAddr[2], pstrConnInfo->au8IPAddr[3]);
 		break;
 		
-	case M2M_WIFI_RESP_CON_STATE_CHANGED:
+		case M2M_WIFI_RESP_CON_STATE_CHANGED:
 		msg_wifi_state = (tstrM2mWifiStateChanged *)msg_data;
-		if (msg_wifi_state->u8CurrState == M2M_WIFI_CONNECTED) 
+		if (msg_wifi_state->u8CurrState == M2M_WIFI_CONNECTED)
 		{	/* If Wi-Fi is connected. */
 			DEBUG_PRINT_STATUS("Wi-Fi connected - Requesting DHCP...");
 			m2m_wifi_request_dhcp_client();
-		} 
-		else if(msg_wifi_state->u8CurrState == M2M_WIFI_DISCONNECTED) 
+		}
+		else if(msg_wifi_state->u8CurrState == M2M_WIFI_DISCONNECTED)
 		{	/* If Wi-Fi is disconnected. */
 			DEBUG_PRINT_STATUS("Wi-Fi disconnected.");
 			m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID),MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
-			/* Disconnect from MQTT broker... 
+			/* Disconnect from MQTT broker...
 			Force close the MQTT connection, because cannot send a disconnect message to the broker when network is broken. */
 			mqtt_disconnect(&mqtt_inst, 1);
 		}
 		break;
 
-	case M2M_WIFI_REQ_DHCP_CONF:
+		case M2M_WIFI_REQ_DHCP_CONF:
 		DEBUG_PRINT_STATUS("DHCP Complete.");
 		/* Try to connect to MQTT broker when Wi-Fi was connected. */
 		DEBUG_PRINT_STATUS("Requesting socket from MQTT broker...");
@@ -185,7 +185,7 @@ static void wifi_callback(uint8 msg_type, void *msg_data)
 		DEBUG_PRINT_STATUS("Request has been sent.");
 		break;
 
-	default:
+		default:
 		break;
 	}
 }
@@ -201,39 +201,39 @@ static void socket_resolve_handler(uint8_t *doamin_name, uint32_t server_ip)
 }
 
 /**
- * \brief Callback to get the MQTT status update.
- *
- * \param[in] conn_id instance id of connection which is being used.
- * \param[in] type type of MQTT notification. Possible types are:
- *  - [MQTT_CALLBACK_SOCK_CONNECTED](@ref MQTT_CALLBACK_SOCK_CONNECTED)
- *  - [MQTT_CALLBACK_CONNECTED](@ref MQTT_CALLBACK_CONNECTED)
- *  - [MQTT_CALLBACK_PUBLISHED](@ref MQTT_CALLBACK_PUBLISHED)
- *  - [MQTT_CALLBACK_SUBSCRIBED](@ref MQTT_CALLBACK_SUBSCRIBED)
- *  - [MQTT_CALLBACK_UNSUBSCRIBED](@ref MQTT_CALLBACK_UNSUBSCRIBED)
- *  - [MQTT_CALLBACK_DISCONNECTED](@ref MQTT_CALLBACK_DISCONNECTED)
- *  - [MQTT_CALLBACK_RECV_PUBLISH](@ref MQTT_CALLBACK_RECV_PUBLISH)
- * \param[in] data A structure contains notification informations. @ref mqtt_data
- */
+* \brief Callback to get the MQTT status update.
+*
+* \param[in] conn_id instance id of connection which is being used.
+* \param[in] type type of MQTT notification. Possible types are:
+*  - [MQTT_CALLBACK_SOCK_CONNECTED](@ref MQTT_CALLBACK_SOCK_CONNECTED)
+*  - [MQTT_CALLBACK_CONNECTED](@ref MQTT_CALLBACK_CONNECTED)
+*  - [MQTT_CALLBACK_PUBLISHED](@ref MQTT_CALLBACK_PUBLISHED)
+*  - [MQTT_CALLBACK_SUBSCRIBED](@ref MQTT_CALLBACK_SUBSCRIBED)
+*  - [MQTT_CALLBACK_UNSUBSCRIBED](@ref MQTT_CALLBACK_UNSUBSCRIBED)
+*  - [MQTT_CALLBACK_DISCONNECTED](@ref MQTT_CALLBACK_DISCONNECTED)
+*  - [MQTT_CALLBACK_RECV_PUBLISH](@ref MQTT_CALLBACK_RECV_PUBLISH)
+* \param[in] data A structure contains notification informations. @ref mqtt_data
+*/
 static void mqtt_callback(struct mqtt_module *module_inst, int type, union mqtt_data *data)
 {
 	switch (type) {
-	case MQTT_CALLBACK_SOCK_CONNECTED:
-	{
-		/*
-		 * If connecting to broker server is complete successfully, Start sending CONNECT message of MQTT.
-		 * Or else retry to connect to broker server.
-		 */
-		if (data->sock_connected.result >= 0) {
-			mqtt_connect_broker(module_inst, 1, NULL, NULL, MQTT_CLIENT_ID, NULL, NULL, 0, 0, 0);
-			DEBUG_PRINT_STATUS("Requesting MQTT connection...");
-		} else {
-			DEBUG_PRINT_ERR("Failed to connect to (%s)! Automatically retrying...", main_mqtt_broker);
-			mqtt_connect(module_inst, main_mqtt_broker); /* Retry that. */
+		case MQTT_CALLBACK_SOCK_CONNECTED:
+		{
+			/*
+			* If connecting to broker server is complete successfully, Start sending CONNECT message of MQTT.
+			* Or else retry to connect to broker server.
+			*/
+			if (data->sock_connected.result >= 0) {
+				mqtt_connect_broker(module_inst, 1, NULL, NULL, MQTT_CLIENT_ID, NULL, NULL, 0, 0, 0);
+				DEBUG_PRINT_STATUS("Requesting MQTT connection...");
+				} else {
+				DEBUG_PRINT_ERR("Failed to connect to (%s)! Automatically retrying...", main_mqtt_broker);
+				mqtt_connect(module_inst, main_mqtt_broker); /* Retry that. */
+			}
 		}
-	}
-	break;
+		break;
 
-	case MQTT_CALLBACK_CONNECTED:
+		case MQTT_CALLBACK_CONNECTED:
 		if (data->connected.result == MQTT_CONN_RESULT_ACCEPT) {
 			/* Subscribe chat topic. */
 			//mqtt_subscribe(module_inst, MAIN_CHAT_TOPIC "#", 0);
@@ -241,18 +241,18 @@ static void mqtt_callback(struct mqtt_module *module_inst, int type, union mqtt_
 			//usart_enable_callback(&cdc_uart_module, USART_CALLBACK_BUFFER_RECEIVED);
 			DEBUG_PRINT_STATUS("MQTT Connection Accepted.");
 			mqtt_connection_state = CONNECTED;
-		} else {
+			} else {
 			/* Cannot connect for some reason. */
 			DEBUG_PRINT_ERR("MQTT broker declined your access! error code %d", data->connected.result);
 		}
 
 		break;
 
-	case MQTT_CALLBACK_RECV_PUBLISH:
+		case MQTT_CALLBACK_RECV_PUBLISH:
 		//Hook for receiving subscriptions
 		break;
 
-	case MQTT_CALLBACK_DISCONNECTED:
+		case MQTT_CALLBACK_DISCONNECTED:
 		/* Stop timer and USART callback. */
 		DEBUG_PRINT_STATUS("MQTT disconnected\r\n");
 		usart_disable_callback(&cdc_uart_module, USART_CALLBACK_BUFFER_RECEIVED);
@@ -327,15 +327,13 @@ void configure_extint_channel(void)
 void extint_detection_callback(void)
 {
 	bool pin_state = port_pin_get_input_level(BUTTON_0_PIN);
-	if(pin_state && !glb_open_debounce_tmr)
+	if(pin_state)
 	{
-		report_sw_open = 1;	
-		glb_open_debounce_tmr = 5; //500ms debounce timer
+		glb_open_debounce_tmr = 3; //300ms debounce timer
 	}
-	else if(!glb_close_debounce_tmr)
+	else
 	{
-		report_sw_closed = 1;
-		glb_close_debounce_tmr = 5; //500ms debounce timer
+		glb_close_debounce_tmr = 3; //300ms debounce timer
 	}
 }
 
@@ -381,7 +379,7 @@ void set_next_rtc_alarm(uint32_t num_of_seconds)
 	alarm.time.month = alarm_time.month;
 	alarm.time.pm = alarm_time.pm;
 	alarm.time.year = alarm_time.year;
-	alarm.time.second = alarm_time.second;	
+	alarm.time.second = alarm_time.second;
 	if(num_of_seconds < 60)
 	{
 		alarm.mask = RTC_CALENDAR_ALARM_MASK_SEC;
@@ -392,111 +390,111 @@ void set_next_rtc_alarm(uint32_t num_of_seconds)
 	{
 		alarm.mask = RTC_CALENDAR_ALARM_MASK_MIN;
 		alarm.time.minute += num_of_seconds / 60;
-		alarm.time.minute = alarm.time.minute % 60;		
+		alarm.time.minute = alarm.time.minute % 60;
 	}
 	else if(num_of_seconds < (3600 * 24)) //time span is greater than an hour, less than a day
 	{
 		alarm.mask = RTC_CALENDAR_ALARM_MASK_HOUR;
 		alarm.time.minute += num_of_seconds / 3600;
-		alarm.time.minute = alarm.time.hour % (3600 * 24);		
+		alarm.time.minute = alarm.time.hour % (3600 * 24);
 	}
 	else
 	{
 		DEBUG_PRINT_ERR("FAILURE TO SET ALARM - Value too high!"); //time span can't exceed 23:59:59 hours
 		return;
 	}
-	rtc_calendar_set_alarm(&rtc_instance, &alarm, RTC_CALENDAR_ALARM_0);	
+	rtc_calendar_set_alarm(&rtc_instance, &alarm, RTC_CALENDAR_ALARM_0);
 }
 
 /**
- * \brief Callback to get the Data from socket.
- *
- * \param[in] sock socket handler.
- * \param[in] u8Msg Type of Socket notification.
- * \param[in] pvMsg A structure contains notification informations.
- */
+* \brief Callback to get the Data from socket.
+*
+* \param[in] sock socket handler.
+* \param[in] u8Msg Type of Socket notification.
+* \param[in] pvMsg A structure contains notification informations.
+*/
 static void TimeServerCallback(SOCKET sock, uint8_t u8Msg, void *pvMsg)
 {
 	/* Check for socket event on socket. */
 	int16_t ret;
 
 	switch (u8Msg) {
-	case SOCKET_MSG_BIND:
-	{
-		/* printf("socket_cb: socket_msg_bind!\r\n"); */
-		tstrSocketBindMsg *pstrBind = (tstrSocketBindMsg *)pvMsg;
-		if (pstrBind && pstrBind->status == 0) {
-			ret = recvfrom(sock, gau8SocketBuffer, MAIN_WIFI_M2M_BUFFER_SIZE, 0);
-			if (ret != SOCK_ERR_NO_ERROR) {
-				printf("socket_cb: recv error!\r\n");
+		case SOCKET_MSG_BIND:
+		{
+			/* printf("socket_cb: socket_msg_bind!\r\n"); */
+			tstrSocketBindMsg *pstrBind = (tstrSocketBindMsg *)pvMsg;
+			if (pstrBind && pstrBind->status == 0) {
+				ret = recvfrom(sock, gau8SocketBuffer, MAIN_WIFI_M2M_BUFFER_SIZE, 0);
+				if (ret != SOCK_ERR_NO_ERROR) {
+					printf("socket_cb: recv error!\r\n");
+				}
+				} else {
+				printf("socket_cb: bind error!\r\n");
 			}
-		} else {
-			printf("socket_cb: bind error!\r\n");
+
+			break;
 		}
 
-		break;
-	}
+		case SOCKET_MSG_RECVFROM:
+		{
+			/* printf("socket_cb: socket_msg_recvfrom!\r\n"); */
+			tstrSocketRecvMsg *pstrRx = (tstrSocketRecvMsg *)pvMsg;
+			if (pstrRx->pu8Buffer && pstrRx->s16BufferSize) {
+				uint8_t packetBuffer[48];
+				memcpy(&packetBuffer, pstrRx->pu8Buffer, sizeof(packetBuffer));
 
-	case SOCKET_MSG_RECVFROM:
-	{
-		/* printf("socket_cb: socket_msg_recvfrom!\r\n"); */
-		tstrSocketRecvMsg *pstrRx = (tstrSocketRecvMsg *)pvMsg;
-		if (pstrRx->pu8Buffer && pstrRx->s16BufferSize) {
-			uint8_t packetBuffer[48];
-			memcpy(&packetBuffer, pstrRx->pu8Buffer, sizeof(packetBuffer));
+				if ((packetBuffer[0] & 0x7) != 4) {                   /* expect only server response */
+					printf("socket_cb: Expecting response from Server Only!\r\n");
+					return;                    /* MODE is not server, abort */
+					} else {
+					uint32_t secsSince1900 = packetBuffer[40] << 24 |
+					packetBuffer[41] << 16 |
+					packetBuffer[42] << 8 |
+					packetBuffer[43];
 
-			if ((packetBuffer[0] & 0x7) != 4) {                   /* expect only server response */
-				printf("socket_cb: Expecting response from Server Only!\r\n");
-				return;                    /* MODE is not server, abort */
-			} else {
-				uint32_t secsSince1900 = packetBuffer[40] << 24 |
-						packetBuffer[41] << 16 |
-						packetBuffer[42] << 8 |
-						packetBuffer[43];
+					/* Now convert NTP time into everyday time.
+					* Unix time starts on Jan 1 1970. In seconds, that's 2208988800.
+					* Subtract seventy years.
+					*/
+					const uint32_t seventyYears = 2208988800UL;
+					time_t rawtime = secsSince1900 - seventyYears;
 
-				/* Now convert NTP time into everyday time.
-				 * Unix time starts on Jan 1 1970. In seconds, that's 2208988800.
-				 * Subtract seventy years.
-				 */
-				const uint32_t seventyYears = 2208988800UL;
-				time_t rawtime = secsSince1900 - seventyYears;
-
-				/* Print the hour, minute and second.
-				 * GMT is the time at Greenwich Meridian.
-				 */
-				struct tm * ptm;
-				printf ("The current GMT time is:\r\n%s", ctime(&rawtime));
-				ptm = localtime ( &rawtime );
-				my_time.hour = ptm->tm_hour;
-				my_time.minute = ptm->tm_min;
-				my_time.second = ptm->tm_sec;
-				my_time.year = ptm->tm_year + 1900;
-				my_time.day = ptm->tm_mday;
-				my_time.month = ptm->tm_mon + 1;
-				//RTC is actually set in main().
-				
-				ret = close(sock);
-				if (ret == SOCK_ERR_NO_ERROR) {
-					udp_socket = -1;
+					/* Print the hour, minute and second.
+					* GMT is the time at Greenwich Meridian.
+					*/
+					struct tm * ptm;
+					printf ("The current GMT time is:\r\n%s", ctime(&rawtime));
+					ptm = localtime ( &rawtime );
+					my_time.hour = ptm->tm_hour;
+					my_time.minute = ptm->tm_min;
+					my_time.second = ptm->tm_sec;
+					my_time.year = ptm->tm_year + 1900;
+					my_time.day = ptm->tm_mday;
+					my_time.month = ptm->tm_mon + 1;
+					//RTC is actually set in main().
 					
-				gb_time_is_set = true;
+					ret = close(sock);
+					if (ret == SOCK_ERR_NO_ERROR) {
+						udp_socket = -1;
+						
+						gb_time_is_set = true;
+					}
 				}
 			}
 		}
-	}
-	break;
+		break;
 
-	default:
+		default:
 		break;
 	}
 }
 
 /**
- * \brief Callback to get the ServerIP from DNS lookup.
- *
- * \param[in] pu8DomainName Domain name.
- * \param[in] u32ServerIP Server IP.
- */
+* \brief Callback to get the ServerIP from DNS lookup.
+*
+* \param[in] pu8DomainName Domain name.
+* \param[in] u32ServerIP Server IP.
+*/
 static void TimeServerResolveCallback(uint8_t *pu8DomainName, uint32_t u32ServerIP)
 {
 	struct sockaddr_in addr;
@@ -524,47 +522,47 @@ static void TimeServerResolveCallback(uint8_t *pu8DomainName, uint32_t u32Server
 }
 
 /**
- * \brief Callback to get the Wi-Fi status update.
- *
- * \param[in] u8MsgType Type of Wi-Fi notification.
- * \param[in] pvMsg A pointer to a buffer containing the notification parameters.
- */
+* \brief Callback to get the Wi-Fi status update.
+*
+* \param[in] u8MsgType Type of Wi-Fi notification.
+* \param[in] pvMsg A pointer to a buffer containing the notification parameters.
+*/
 static void TimeServerWiFiCallback(uint8_t u8MsgType, void *pvMsg)
 {
 	switch (u8MsgType) {
-	case M2M_WIFI_RESP_CON_STATE_CHANGED:
-	{
-		tstrM2mWifiStateChanged *pstrWifiState = (tstrM2mWifiStateChanged *)pvMsg;
-		if (pstrWifiState->u8CurrState == M2M_WIFI_CONNECTED) 
+		case M2M_WIFI_RESP_CON_STATE_CHANGED:
 		{
-			printf("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: CONNECTED\r\n");
-			m2m_wifi_request_dhcp_client();
-		} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED) 
-		{
-			gbConnectedWifi = false;
-			printf("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED\r\n");
-			m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID), MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
+			tstrM2mWifiStateChanged *pstrWifiState = (tstrM2mWifiStateChanged *)pvMsg;
+			if (pstrWifiState->u8CurrState == M2M_WIFI_CONNECTED)
+			{
+				printf("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: CONNECTED\r\n");
+				m2m_wifi_request_dhcp_client();
+			} else if (pstrWifiState->u8CurrState == M2M_WIFI_DISCONNECTED)
+			{
+				gbConnectedWifi = false;
+				printf("wifi_cb: M2M_WIFI_RESP_CON_STATE_CHANGED: DISCONNECTED\r\n");
+				m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID), MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
+			}
+
+			break;
 		}
 
-		break;
-	}
+		case M2M_WIFI_REQ_DHCP_CONF:
+		{
+			uint8_t *pu8IPAddress = (uint8_t *)pvMsg;
+			/* Turn LED0 on to declare that IP address received. */
+			printf("wifi_cb: M2M_WIFI_REQ_DHCP_CONF: IP is %u.%u.%u.%u\r\n", pu8IPAddress[0], pu8IPAddress[1], pu8IPAddress[2], pu8IPAddress[3]);
+			gbConnectedWifi = true;
 
-	case M2M_WIFI_REQ_DHCP_CONF:
-	{
-		uint8_t *pu8IPAddress = (uint8_t *)pvMsg;
-		/* Turn LED0 on to declare that IP address received. */
-		printf("wifi_cb: M2M_WIFI_REQ_DHCP_CONF: IP is %u.%u.%u.%u\r\n", pu8IPAddress[0], pu8IPAddress[1], pu8IPAddress[2], pu8IPAddress[3]);
-		gbConnectedWifi = true;
+			/* Obtain the IP Address by network name */
+			gethostbyname((uint8_t *)MAIN_WORLDWIDE_NTP_POOL_HOSTNAME);
+			break;
+		}
 
-		/* Obtain the IP Address by network name */
-		gethostbyname((uint8_t *)MAIN_WORLDWIDE_NTP_POOL_HOSTNAME);
-		break;
-	}
-
-	default:
-	{
-		break;
-	}
+		default:
+		{
+			break;
+		}
 	}
 }
 
@@ -575,7 +573,7 @@ void GetTimeFromServer(void)
 	struct sockaddr_in addr_in;
 	
 	/* Initialize the WINC1500 BSP. */
-	nm_bsp_init();	
+	nm_bsp_init();
 
 	/* Initialize Wi-Fi parameters structure. */
 	memset((uint8_t *)&param, 0, sizeof(tstrWifiInitParam));
@@ -597,22 +595,22 @@ void GetTimeFromServer(void)
 
 	/* Connect to router. */
 	m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID),
-			MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
+	MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
 
-	while (gb_time_is_set == false) 
+	while (gb_time_is_set == false)
 	{
 		/* Handle pending events from network controller. */
 		m2m_wifi_handle_events(NULL);
 
-		if (gbConnectedWifi) 
+		if (gbConnectedWifi)
 		{
 			/*
-			 * Create the socket for the first time.
-			 */
-			if (udp_socket < 0) 
+			* Create the socket for the first time.
+			*/
+			if (udp_socket < 0)
 			{
 				udp_socket = socket(AF_INET, SOCK_DGRAM, 0);
-				if (udp_socket < 0) 
+				if (udp_socket < 0)
 				{
 					printf("main: UDP Client Socket Creation Failed.\r\n");
 					continue;
@@ -630,7 +628,7 @@ void GetTimeFromServer(void)
 	close(udp_socket);
 	socketDeinit();
 	if(m2m_wifi_disconnect() != M2M_SUCCESS)
-		DEBUG_PRINT_ERR("Unable to cleanly disconnect the WiFi connection.");
+	DEBUG_PRINT_ERR("Unable to cleanly disconnect the WiFi connection.");
 	m2m_wifi_deinit(NULL);
 }
 
@@ -639,19 +637,24 @@ char* GenerateTimeStamp(void)
 	static char timestamp[30];
 	rtc_calendar_get_time(&rtc_instance, &my_time);
 	sprintf(timestamp, "%.2d/%.2d/%d %d:%.2d:%.2d GMT", my_time.month, my_time.day, my_time.year, my_time.hour, my_time.minute, my_time.second);
-	return timestamp;	
+	return timestamp;
 }
 
-void Service_1s(void)
+/*Service_1s is called from the main thread every 1 second.*/
+/*This is a general purpose function to be used for anything that requires periodic service at 1s intervals*/
+inline void Service_1s(void)
 {
-	glb_service_1s_flag = 0;
-	/*Place code to be serviced every 1 second here:*/
-	
+	if(glb_service_1s_flag)
+	{
+		glb_service_1s_flag = 0;
+		/*Place code to be serviced every 1 second here:*/
+	}
 }
 
 /*Callback should be fired every 100ms*/
 void tc_callback(struct tc_module *const module_inst)
 {
+	bool pin_state;
 	static uint_fast8_t tmr_cntr_1s = 0;
 	if(tmr_cntr_1s > 9)
 	{
@@ -659,19 +662,35 @@ void tc_callback(struct tc_module *const module_inst)
 		glb_service_1s_flag = 1;
 	}
 	else
-		tmr_cntr_1s++;
-		
-	if(glb_open_debounce_tmr)	
-		glb_open_debounce_tmr--;
+	tmr_cntr_1s++;
+	
+	if(glb_open_debounce_tmr)
+	{
+		pin_state = port_pin_get_input_level(BUTTON_0_PIN);
+		if(pin_state)
+		{
+			glb_open_debounce_tmr--;
+			if(glb_open_debounce_tmr == 0)
+			report_sw_open = 1;
+		}
+	}
 	if(glb_close_debounce_tmr)
-		glb_close_debounce_tmr--;
+	{
+		pin_state = port_pin_get_input_level(BUTTON_0_PIN);
+		if(!pin_state)
+		{
+			glb_close_debounce_tmr--;
+			if(glb_close_debounce_tmr == 0)
+			report_sw_closed = 1;
+		}
+	}
 }
 
 void configure_tc(void)
 {
 	struct tc_config config_tc;
 	tc_get_config_defaults(&config_tc);
-	config_tc.counter_size = TC_COUNTER_SIZE_16BIT;
+	config_tc.counter_size = TC_COUNTER_SIZE_8BIT;
 	config_tc.clock_source = GCLK_GENERATOR_1;
 	config_tc.clock_prescaler = TC_CLOCK_PRESCALER_DIV16;
 	config_tc.counter_8_bit.period = 205;
@@ -691,6 +710,7 @@ int main(void)
 	tstrWifiInitParam param;
 	int8_t ret;
 	char msg_payload[64];
+	uint16_t ping_cnt = 0;
 	
 	system_init();
 
@@ -698,10 +718,10 @@ int main(void)
 	DEBUG_PRINT_STATUS("***Application Starting***");
 	DEBUG_PRINT_STATUS("Compiled on "__DATE__ " @ "__TIME__);
 	
-#ifdef ENABLE_AUTO_TIME_SETTING
+	#ifdef ENABLE_AUTO_TIME_SETTING
 	DEBUG_PRINT_STATUS("Retrieving time from server... RTC will be automatically set.");
 	GetTimeFromServer();
-#else
+	#else
 	DEBUG_PRINT_STATUS("RTC Time is NOT automatically set!!!");
 	//since we don't get the actual time, fill with dummy time
 	my_time.hour = 0;
@@ -710,7 +730,7 @@ int main(void)
 	my_time.year = 1900;
 	my_time.day = 1;
 	my_time.month = 1;
-#endif
+	#endif
 
 	/* Initialize the WINC1500 BSP. */
 	nm_bsp_init();
@@ -724,7 +744,10 @@ int main(void)
 	
 	configure_extint_channel();
 	configure_extint_callbacks();
-
+	
+	configure_tc();
+	configure_tc_callbacks();
+	
 	/* Initialize the Timer. */
 	configure_timer();
 
@@ -737,7 +760,7 @@ int main(void)
 	/* Initialize Wi-Fi driver with data and status callbacks. */
 	param.pfAppWifiCb = wifi_callback; /* Set Wi-Fi event callback. */
 	ret = m2m_wifi_init(&param);
-	if (M2M_SUCCESS != ret) 
+	if (M2M_SUCCESS != ret)
 	{
 		DEBUG_PRINT_ERR("Call Error: retval=%d", ret);
 		while (1);
@@ -748,12 +771,12 @@ int main(void)
 	registerSocketCallback(socket_event_handler, socket_resolve_handler);
 	
 	//Setup sleep mode
-	if (MAIN_PS_SLEEP_MODE == M2M_PS_MANUAL) 
+	if (MAIN_PS_SLEEP_MODE == M2M_PS_MANUAL)
 	{
 		DEBUG_PRINT_STATUS("Sleep mode is M2M_PS_MANUAL");
 		m2m_wifi_set_sleep_mode(MAIN_PS_SLEEP_MODE, 1);
-	} 
-	else if (MAIN_PS_SLEEP_MODE == M2M_PS_DEEP_AUTOMATIC) 
+	}
+	else if (MAIN_PS_SLEEP_MODE == M2M_PS_DEEP_AUTOMATIC)
 	{
 		DEBUG_PRINT_STATUS("Sleep mode is M2M_PS_DEEP_AUTOMATIC");
 		tstrM2mLsnInt strM2mLsnInt;
@@ -767,7 +790,7 @@ int main(void)
 	DEBUG_PRINT_STATUS("Connecting to WiFi...");
 	m2m_wifi_connect((char *)MAIN_WLAN_SSID, sizeof(MAIN_WLAN_SSID), MAIN_WLAN_AUTH, (char *)MAIN_WLAN_PSK, M2M_WIFI_CH_ALL);
 	DEBUG_PRINT_STATUS("Entering main loop...");
-	while (1) 
+	while (1)
 	{
 		/* Handle pending events from network controller. */
 		m2m_wifi_handle_events(NULL);
@@ -777,60 +800,60 @@ int main(void)
 		switch(mqtt_connection_state)
 		{
 			case DISCONNECTED:
-				mqtt_connect(&mqtt_inst, main_mqtt_broker);
-				DEBUG_PRINT_STATUS("Connecting to MQTT Broker...");
-				mqtt_connection_state = CONNECTING;
-				break;
-				
+			mqtt_connect(&mqtt_inst, main_mqtt_broker);
+			DEBUG_PRINT_STATUS("Connecting to MQTT Broker...");
+			mqtt_connection_state = CONNECTING;
+			break;
+			
 			case CONNECTED:
-				if(report_sw_open)
-				{
-					report_sw_open = 0;
-					sprintf(msg_payload, "Opened @ %s", GenerateTimeStamp());					
-					DEBUG_PRINT_STATUS("Sending via MQTT: '%s' to %s", msg_payload, MQTT_TOPIC_SW0_LAST_OPENED);
-					mqtt_publish(&mqtt_inst, MQTT_TOPIC_SW0_LAST_OPENED, msg_payload, strlen(msg_payload), 0, 1);
-				}
-				else if(report_sw_closed)
-				{
-					report_sw_closed = 0;
-					sprintf(msg_payload, "Closed @ %s", GenerateTimeStamp());	
-					DEBUG_PRINT_STATUS("Sending via MQTT: '%s' to %s", msg_payload, MQTT_TOPIC_SW0_LAST_CLOSED);
-					mqtt_publish(&mqtt_inst, MQTT_TOPIC_SW0_LAST_CLOSED, msg_payload, strlen(msg_payload), 0, 1);
-				}
-				else if (glb_rtc_activity)
-				{
-					glb_rtc_activity = 0;
-					rtc_calendar_get_time(&rtc_instance, &my_time);
-					sprintf(msg_payload, "Ping @ %s", GenerateTimeStamp());
-					DEBUG_PRINT_STATUS("Sending via MQTT: %s", msg_payload);
-					mqtt_publish(&mqtt_inst, MQTT_TOPIC_HEARTBEAT, msg_payload, strlen(msg_payload), 0, 1);
-				}
-				else if (glb_report_startup)
-				{
-					glb_report_startup = 0;
-					sprintf(msg_payload, "Start-up @ %s", GenerateTimeStamp());
-					DEBUG_PRINT_STATUS("Sending via MQTT: %s", msg_payload);
-					mqtt_publish(&mqtt_inst, MQTT_TOPIC_STARTUP_TIME, msg_payload, strlen(msg_payload), 0, 1);					
-				}
-#ifdef ENABLE_SLEEPING
-				if(mqtt_disconnect(&mqtt_inst, 1) == 0)
-				{
-					DEBUG_PRINT_STATUS("Disconnecting from MQTT Broker...");
-					mqtt_connection_state = DISCONNECTED;	
-				}
-				else
-					DEBUG_PRINT_ERR("Disconnection from broker failed.");
-				DEBUG_PRINT_STATUS("---Waiting for activity...");
-				if (MAIN_PS_SLEEP_MODE == M2M_PS_MANUAL)
-					m2m_wifi_request_sleep(1000);
-				system_sleep();
-				while((glb_rtc_activity == 0) && (report_sw_open == 0) && (report_sw_closed == 0));
-				DEBUG_PRINT_STATUS("Activity detected!");
-#endif //ENABLE_SLEEPING
-				break;
-				
+			if(report_sw_open)
+			{
+				report_sw_open = 0;
+				sprintf(msg_payload, "Opened @ %s", GenerateTimeStamp());
+				DEBUG_PRINT_STATUS("Sending via MQTT: '%s' to %s", msg_payload, MQTT_TOPIC_SW0_LAST_OPENED);
+				mqtt_publish(&mqtt_inst, MQTT_TOPIC_SW0_LAST_OPENED, msg_payload, strlen(msg_payload), 0, 1);
+			}
+			else if(report_sw_closed)
+			{
+				report_sw_closed = 0;
+				sprintf(msg_payload, "Closed @ %s", GenerateTimeStamp());
+				DEBUG_PRINT_STATUS("Sending via MQTT: '%s' to %s", msg_payload, MQTT_TOPIC_SW0_LAST_CLOSED);
+				mqtt_publish(&mqtt_inst, MQTT_TOPIC_SW0_LAST_CLOSED, msg_payload, strlen(msg_payload), 0, 1);
+			}
+			else if (glb_rtc_activity)
+			{
+				glb_rtc_activity = 0;
+				rtc_calendar_get_time(&rtc_instance, &my_time);
+				sprintf(msg_payload, "Ping %d @ %s",ping_cnt++,  GenerateTimeStamp());
+				DEBUG_PRINT_STATUS("Sending via MQTT: %s", msg_payload);
+				mqtt_publish(&mqtt_inst, MQTT_TOPIC_HEARTBEAT, msg_payload, strlen(msg_payload), 0, 1);
+			}
+			else if (glb_report_startup)
+			{
+				glb_report_startup = 0;
+				sprintf(msg_payload, "Start-up @ %s", GenerateTimeStamp());
+				DEBUG_PRINT_STATUS("Sending via MQTT: %s", msg_payload);
+				mqtt_publish(&mqtt_inst, MQTT_TOPIC_STARTUP_TIME, msg_payload, strlen(msg_payload), 0, 1);
+			}
+			#ifdef ENABLE_SLEEPING
+			if(mqtt_disconnect(&mqtt_inst, 1) == 0)
+			{
+				DEBUG_PRINT_STATUS("Disconnecting from MQTT Broker...");
+				mqtt_connection_state = DISCONNECTED;
+			}
+			else
+			DEBUG_PRINT_ERR("Disconnection from broker failed.");
+			DEBUG_PRINT_STATUS("---Waiting for activity...");
+			if (MAIN_PS_SLEEP_MODE == M2M_PS_MANUAL)
+			m2m_wifi_request_sleep(1000);
+			system_sleep();
+			while((glb_rtc_activity == 0) && (report_sw_open == 0) && (report_sw_closed == 0));
+			DEBUG_PRINT_STATUS("Activity detected!");
+			#endif //ENABLE_SLEEPING
+			break;
+			
 			default:
-				break;		
+			break;
 		}
 	}
 }
